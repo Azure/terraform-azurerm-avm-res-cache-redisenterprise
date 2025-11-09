@@ -21,6 +21,11 @@ variable "resource_group_name" {
   description = "The resource group where the resources will be deployed."
 }
 
+variable "resource_group_id" {
+  type        = string
+  description = "The resource ID of the resource group."
+}
+
 # required AVM interfaces
 # remove only if not supported by the resource
 # tflint-ignore: terraform_unused_declarations
