@@ -11,8 +11,8 @@ resource "azurerm_private_endpoint" "this_managed_dns_zone_groups" {
   private_service_connection {
     is_manual_connection           = false
     name                           = each.value.private_service_connection_name != null ? each.value.private_service_connection_name : "pse-${var.name}"
-    private_connection_resource_id = azapi_resource.redis_enterprise.id
-    subresource_names              = ["redisEnterprise"]
+    private_connection_resource_id = each.value.redis_cache_id != null ? each.value.redis_cache_id : (length(module.managed_redis) > 0 ? values(module.managed_redis)[0].resource_id : null)
+    subresource_names              = ["redisCache"]
   }
   dynamic "ip_configuration" {
     for_each = each.value.ip_configurations
@@ -20,8 +20,8 @@ resource "azurerm_private_endpoint" "this_managed_dns_zone_groups" {
     content {
       name               = ip_configuration.value.name
       private_ip_address = ip_configuration.value.private_ip_address
-      member_name        = "redisEnterprise"
-      subresource_name   = "redisEnterprise"
+      member_name        = "redisCache"
+      subresource_name   = "redisCache"
     }
   }
   dynamic "private_dns_zone_group" {
@@ -50,8 +50,8 @@ resource "azurerm_private_endpoint" "this_unmanaged_dns_zone_groups" {
   private_service_connection {
     is_manual_connection           = false
     name                           = each.value.private_service_connection_name != null ? each.value.private_service_connection_name : "pse-${var.name}"
-    private_connection_resource_id = azapi_resource.redis_enterprise.id
-    subresource_names              = ["redisEnterprise"]
+    private_connection_resource_id = each.value.redis_cache_id != null ? each.value.redis_cache_id : (length(module.managed_redis) > 0 ? values(module.managed_redis)[0].resource_id : null)
+    subresource_names              = ["redisCache"]
   }
   dynamic "ip_configuration" {
     for_each = each.value.ip_configurations
@@ -59,8 +59,8 @@ resource "azurerm_private_endpoint" "this_unmanaged_dns_zone_groups" {
     content {
       name               = ip_configuration.value.name
       private_ip_address = ip_configuration.value.private_ip_address
-      member_name        = "redisEnterprise"
-      subresource_name   = "redisEnterprise"
+      member_name        = "redisCache"
+      subresource_name   = "redisCache"
     }
   }
 

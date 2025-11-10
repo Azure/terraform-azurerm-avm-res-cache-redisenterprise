@@ -19,6 +19,7 @@ terraform {
 
 provider "azurerm" {
   features {}
+  resource_provider_registrations = "none"
 }
 
 
@@ -48,17 +49,49 @@ resource "azurerm_resource_group" "this" {
   name     = module.naming.resource_group.name_unique
 }
 
-# This is the module call
+# This is the module call for Azure Managed Redis (standalone) - Example with Premium SKU
 # Do not specify location here due to the randomization above.
 # Leaving location as `null` will cause the module to use the resource group location
 # with a data source.
 module "test" {
   source = "../../"
 
-  # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
-  # ...
+  # source             = "Azure/avm-res-cache-redisenterprise/azurerm"
+  # version            = "~> 0.1"
+
   location            = azurerm_resource_group.this.location
-  name                = "TODO" # TODO update with module.naming.<RESOURCE_TYPE>.name_unique
+  name                = module.naming.redis_cache.name_unique
   resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = var.enable_telemetry # see variables.tf
+  resource_group_id   = azurerm_resource_group.this.id
+
+  # Azure Managed Redis databases configuration - Premium example
+  managed_redis_databases = {
+    premium = {
+      sku_name = "Premium"  # Premium SKU for advanced features
+      family   = "P"        # P family for Premium
+      capacity = 1          # 1-5 for Premium
+
+      # Optional configurations
+      enable_non_ssl_port   = false
+      minimum_tls_version   = "1.2"
+      public_network_access = "Enabled"
+
+      # Redis configuration
+      redis_configuration = {
+        maxmemory_policy       = "allkeys-lru"
+        authentication_enabled = true
+        rdb_backup_enabled     = true
+        rdb_backup_frequency   = 60  # Minutes
+      }
+
+      # High availability (Premium only)
+      replicas_per_primary = 1
+      shard_count          = 1
+
+      # Availability zones
+      zones = ["1", "2", "3"]
+    }
+  }
+
+  enable_telemetry = var.enable_telemetry # see variables.tf
 }

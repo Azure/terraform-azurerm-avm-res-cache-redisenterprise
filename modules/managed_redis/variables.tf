@@ -86,18 +86,18 @@ variable "public_network_access" {
 
 variable "redis_configuration" {
   type = object({
-    maxmemory_policy                     = optional(string)
-    maxmemory_reserved                   = optional(number)
-    maxmemory_delta                      = optional(number)
-    maxfragmentationmemory_reserved      = optional(number)
-    rdb_backup_enabled                   = optional(bool)
-    rdb_backup_frequency                 = optional(number)
-    rdb_backup_max_snapshot_count        = optional(number)
-    rdb_storage_connection_string        = optional(string)
-    aof_backup_enabled                   = optional(bool)
-    aof_storage_connection_string_0      = optional(string)
-    aof_storage_connection_string_1      = optional(string)
-    authentication_enabled               = optional(bool, true)
+    maxmemory_policy                = optional(string)
+    maxmemory_reserved              = optional(number)
+    maxmemory_delta                 = optional(number)
+    maxfragmentationmemory_reserved = optional(number)
+    rdb_backup_enabled              = optional(bool)
+    rdb_backup_frequency            = optional(number)
+    rdb_backup_max_snapshot_count   = optional(number)
+    rdb_storage_connection_string   = optional(string)
+    aof_backup_enabled              = optional(bool)
+    aof_storage_connection_string_0 = optional(string)
+    aof_storage_connection_string_1 = optional(string)
+    authentication_enabled          = optional(bool, true)
   })
   default     = null
   description = "Redis configuration settings."
