@@ -49,10 +49,7 @@ resource "azurerm_resource_group" "this" {
   name     = module.naming.resource_group.name_unique
 }
 
-# This is the module call for Azure Managed Redis (standalone) - Example with Premium SKU
-# Do not specify location here due to the randomization above.
-# Leaving location as `null` will cause the module to use the resource group location
-# with a data source.
+# This is the module call for Azure Managed Redis - Premium SKU example
 module "test" {
   source = "../../"
 
@@ -64,25 +61,22 @@ module "test" {
   resource_group_name = azurerm_resource_group.this.name
   resource_group_id   = azurerm_resource_group.this.id
 
-  # SKU configuration (required for Redis Enterprise infrastructure)
-  sku = {
-    name     = "Balanced_B0" # Minimum SKU for testing
-    capacity = null          # Only used with Enterprise and EnterpriseFlash SKUs
-  }
-
-  # High availability configuration
-  enable_high_availability = true
-
   # Azure Managed Redis databases configuration
   managed_redis_databases = {
     premium = {
-      sku_name = "Memory-Optimized_M5" # Azure Managed Redis SKU: Memory-Optimized tier
+      sku_name = "Balanced_B1" # Azure Managed Redis SKU: Balanced tier
 
-      # Redis configuration
+      # Redis configuration (optional)
       redis_configuration = {
         maxmemory_policy = "allkeys-lru"
       }
     }
+  }
+
+  # Optional: Tags
+  tags = {
+    environment = "testing"
+    managed_by  = "terraform"
   }
 
   enable_telemetry = var.enable_telemetry # see variables.tf
