@@ -2,7 +2,7 @@ module "managed_redis" {
   source   = "./modules/managed_redis"
   for_each = var.managed_redis_databases
 
-  name              = each.key
+  name              = "${var.name}-${each.key}"
   location          = var.location
   resource_group_id = var.resource_group_id
 

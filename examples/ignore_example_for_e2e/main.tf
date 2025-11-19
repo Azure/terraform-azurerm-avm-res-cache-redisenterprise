@@ -64,32 +64,24 @@ module "test" {
   resource_group_name = azurerm_resource_group.this.name
   resource_group_id   = azurerm_resource_group.this.id
 
-  # Azure Managed Redis databases configuration - Premium example
+  # SKU configuration (required for Redis Enterprise infrastructure)
+  sku = {
+    name     = "Balanced_B0" # Minimum SKU for testing
+    capacity = null          # Only used with Enterprise and EnterpriseFlash SKUs
+  }
+
+  # High availability configuration
+  enable_high_availability = true
+
+  # Azure Managed Redis databases configuration
   managed_redis_databases = {
     premium = {
-      sku_name = "Premium"  # Premium SKU for advanced features
-      family   = "P"        # P family for Premium
-      capacity = 1          # 1-5 for Premium
-
-      # Optional configurations
-      enable_non_ssl_port   = false
-      minimum_tls_version   = "1.2"
-      public_network_access = "Enabled"
+      sku_name = "Memory-Optimized_M5" # Azure Managed Redis SKU: Memory-Optimized tier
 
       # Redis configuration
       redis_configuration = {
-        maxmemory_policy       = "allkeys-lru"
-        authentication_enabled = true
-        rdb_backup_enabled     = true
-        rdb_backup_frequency   = 60  # Minutes
+        maxmemory_policy = "allkeys-lru"
       }
-
-      # High availability (Premium only)
-      replicas_per_primary = 1
-      shard_count          = 1
-
-      # Availability zones
-      zones = ["1", "2", "3"]
     }
   }
 

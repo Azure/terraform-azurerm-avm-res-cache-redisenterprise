@@ -64,22 +64,23 @@ module "test" {
   resource_group_name = azurerm_resource_group.this.name
   resource_group_id   = azurerm_resource_group.this.id
 
+  # SKU configuration (required for Redis Enterprise infrastructure)
+  sku = {
+    name     = "Balanced_B0" # Minimum SKU for testing
+    capacity = null          # Only used with Enterprise and EnterpriseFlash SKUs
+  }
+
+  # High availability configuration
+  enable_high_availability = true
+
   # Azure Managed Redis databases configuration
   managed_redis_databases = {
     default = {
-      sku_name = "Standard"  # Options: Basic, Standard, Premium
-      family   = "C"         # C for Basic/Standard, P for Premium
-      capacity = 1           # 0-6 depending on SKU
-
-      # Optional configurations
-      enable_non_ssl_port   = false
-      minimum_tls_version   = "1.2"
-      public_network_access = "Enabled"
+      sku_name = "Balanced_B1" # Azure Managed Redis SKU: Balanced tier
 
       # Redis configuration
       redis_configuration = {
-        maxmemory_policy       = "volatile-lru"
-        authentication_enabled = true
+        maxmemory_policy = "volatile-lru"
       }
     }
   }

@@ -22,71 +22,27 @@ variable "resource_group_id" {
 
 variable "sku_name" {
   type        = string
-  description = "The SKU name of the Redis cache. Possible values are Basic, Standard, Premium."
+  description = "The SKU name for Azure Managed Redis. Valid values: Balanced_B0, Balanced_B1, Balanced_B3, Balanced_B5, Memory-Optimized_M10, Memory-Optimized_M20, Compute-Optimized_X5, etc."
   nullable    = false
-
-  validation {
-    condition     = can(regex("^(Basic|Standard|Premium)$", var.sku_name))
-    error_message = "The SKU name must be one of 'Basic', 'Standard', or 'Premium'."
-  }
 }
 
+# Deprecated - kept for backward compatibility but not used
 variable "family" {
   type        = string
-  description = "The SKU family/pricing group. Valid values are C (Basic/Standard) and P (Premium)."
-  nullable    = false
-
-  validation {
-    condition     = can(regex("^(C|P)$", var.family))
-    error_message = "The family must be either 'C' or 'P'."
-  }
+  default     = null
+  description = "DEPRECATED: Not used in Azure Managed Redis. Kept for backward compatibility."
 }
 
+# Deprecated - kept for backward compatibility but not used
 variable "capacity" {
   type        = number
-  description = "The size of the Redis cache to deploy. Valid values depend on the SKU family."
-  nullable    = false
-
-  validation {
-    condition     = var.capacity >= 0 && var.capacity <= 6
-    error_message = "The capacity must be between 0 and 6."
-  }
-}
-
-variable "enable_non_ssl_port" {
-  type        = bool
-  default     = false
-  description = "Enable the non-SSL port (6379)."
-  nullable    = false
-}
-
-variable "minimum_tls_version" {
-  type        = string
-  default     = "1.2"
-  description = "The minimum TLS version."
-  nullable    = false
-
-  validation {
-    condition     = can(regex("^(1.0|1.1|1.2)$", var.minimum_tls_version))
-    error_message = "The minimum TLS version must be one of '1.0', '1.1', or '1.2'."
-  }
-}
-
-variable "public_network_access" {
-  type        = string
-  default     = "Enabled"
-  description = "Whether public network access is allowed. Possible values are Enabled and Disabled."
-  nullable    = false
-
-  validation {
-    condition     = can(regex("^(Enabled|Disabled)$", var.public_network_access))
-    error_message = "The public network access must be either 'Enabled' or 'Disabled'."
-  }
+  default     = null
+  description = "DEPRECATED: Not used in Azure Managed Redis. Kept for backward compatibility."
 }
 
 variable "redis_configuration" {
   type = object({
-    maxmemory_policy                = optional(string)
+    maxmemory_policy                = optional(string, "volatile-lru")
     maxmemory_reserved              = optional(number)
     maxmemory_delta                 = optional(number)
     maxfragmentationmemory_reserved = optional(number)
@@ -100,49 +56,71 @@ variable "redis_configuration" {
     authentication_enabled          = optional(bool, true)
   })
   default     = null
-  description = "Redis configuration settings."
+  description = "Redis configuration settings. Note: Azure Managed Redis has limited configuration options."
+}
+
+# The following variables are kept for backward compatibility but not used in Azure Managed Redis
+variable "enable_non_ssl_port" {
+  type        = bool
+  default     = false
+  description = "DEPRECATED: Not used in Azure Managed Redis."
+  nullable    = false
+}
+
+variable "minimum_tls_version" {
+  type        = string
+  default     = "1.2"
+  description = "DEPRECATED: Not used in Azure Managed Redis."
+  nullable    = false
+}
+
+variable "public_network_access" {
+  type        = string
+  default     = "Enabled"
+  description = "DEPRECATED: Not used in Azure Managed Redis."
+  nullable    = false
 }
 
 variable "replicas_per_master" {
   type        = number
   default     = null
-  description = "The number of replicas per master (deprecated, use replicas_per_primary)."
+  description = "DEPRECATED: Not used in Azure Managed Redis."
 }
 
 variable "replicas_per_primary" {
   type        = number
   default     = null
-  description = "The number of replicas per primary."
+  description = "DEPRECATED: Not used in Azure Managed Redis."
 }
 
 variable "shard_count" {
   type        = number
   default     = null
-  description = "The number of shards to create on a Premium Cluster Cache."
+  description = "DEPRECATED: Not used in Azure Managed Redis."
 }
 
 variable "static_ip" {
   type        = string
   default     = null
-  description = "The static IP address to assign to the Redis cache."
+  description = "DEPRECATED: Not used in Azure Managed Redis."
 }
 
 variable "subnet_id" {
   type        = string
   default     = null
-  description = "The subnet ID for the Redis cache (Premium SKU only)."
+  description = "DEPRECATED: Not used in Azure Managed Redis."
 }
 
 variable "tenant_settings" {
   type        = map(string)
   default     = null
-  description = "A mapping of tenant settings to assign to the resource."
+  description = "DEPRECATED: Not used in Azure Managed Redis."
 }
 
 variable "zones" {
   type        = list(string)
   default     = null
-  description = "A list of availability zones where the Redis cache should be located."
+  description = "DEPRECATED: Not used in Azure Managed Redis."
 }
 
 variable "tags" {
