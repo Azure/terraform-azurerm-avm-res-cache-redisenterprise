@@ -64,12 +64,9 @@ module "test" {
   # Azure Managed Redis databases configuration
   managed_redis_databases = {
     premium = {
-      sku_name = "Balanced_B1" # Azure Managed Redis SKU: Balanced tier
-
-      # Redis configuration (optional)
-      redis_configuration = {
-        maxmemory_policy = "allkeys-lru"
-      }
+      sku_name            = "Balanced_B1" # Azure Managed Redis SKU: Balanced tier
+      minimum_tls_version = "1.2"
+      enable_non_ssl_port = false
     }
   }
 

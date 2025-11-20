@@ -26,101 +26,18 @@ variable "sku_name" {
   nullable    = false
 }
 
-# Deprecated - kept for backward compatibility but not used
-variable "family" {
-  type        = string
-  default     = null
-  description = "DEPRECATED: Not used in Azure Managed Redis. Kept for backward compatibility."
-}
-
-# Deprecated - kept for backward compatibility but not used
-variable "capacity" {
-  type        = number
-  default     = null
-  description = "DEPRECATED: Not used in Azure Managed Redis. Kept for backward compatibility."
-}
-
-variable "redis_configuration" {
-  type = object({
-    maxmemory_policy                = optional(string, "volatile-lru")
-    maxmemory_reserved              = optional(number)
-    maxmemory_delta                 = optional(number)
-    maxfragmentationmemory_reserved = optional(number)
-    rdb_backup_enabled              = optional(bool)
-    rdb_backup_frequency            = optional(number)
-    rdb_backup_max_snapshot_count   = optional(number)
-    rdb_storage_connection_string   = optional(string)
-    aof_backup_enabled              = optional(bool)
-    aof_storage_connection_string_0 = optional(string)
-    aof_storage_connection_string_1 = optional(string)
-    authentication_enabled          = optional(bool, true)
-  })
-  default     = null
-  description = "Redis configuration settings. Note: Azure Managed Redis has limited configuration options."
-}
-
-# The following variables are kept for backward compatibility but not used in Azure Managed Redis
 variable "enable_non_ssl_port" {
   type        = bool
   default     = false
-  description = "DEPRECATED: Not used in Azure Managed Redis."
+  description = "Enable non-SSL port (6379). If false, uses encrypted protocol. If true, uses plaintext protocol."
   nullable    = false
 }
 
 variable "minimum_tls_version" {
   type        = string
   default     = "1.2"
-  description = "DEPRECATED: Not used in Azure Managed Redis."
+  description = "The minimum TLS version for the Redis Enterprise cluster."
   nullable    = false
-}
-
-variable "public_network_access" {
-  type        = string
-  default     = "Enabled"
-  description = "DEPRECATED: Not used in Azure Managed Redis."
-  nullable    = false
-}
-
-variable "replicas_per_master" {
-  type        = number
-  default     = null
-  description = "DEPRECATED: Not used in Azure Managed Redis."
-}
-
-variable "replicas_per_primary" {
-  type        = number
-  default     = null
-  description = "DEPRECATED: Not used in Azure Managed Redis."
-}
-
-variable "shard_count" {
-  type        = number
-  default     = null
-  description = "DEPRECATED: Not used in Azure Managed Redis."
-}
-
-variable "static_ip" {
-  type        = string
-  default     = null
-  description = "DEPRECATED: Not used in Azure Managed Redis."
-}
-
-variable "subnet_id" {
-  type        = string
-  default     = null
-  description = "DEPRECATED: Not used in Azure Managed Redis."
-}
-
-variable "tenant_settings" {
-  type        = map(string)
-  default     = null
-  description = "DEPRECATED: Not used in Azure Managed Redis."
-}
-
-variable "zones" {
-  type        = list(string)
-  default     = null
-  description = "DEPRECATED: Not used in Azure Managed Redis."
 }
 
 variable "tags" {
@@ -139,3 +56,4 @@ variable "timeouts" {
   default     = null
   description = "The timeouts for creating, reading, updating, and deleting the database resource."
 }
+
