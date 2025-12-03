@@ -19,6 +19,7 @@ terraform {
 
 provider "azurerm" {
   features {}
+  resource_provider_registrations = "none"
 }
 
 
@@ -48,17 +49,32 @@ resource "azurerm_resource_group" "this" {
   name     = module.naming.resource_group.name_unique
 }
 
-# This is the module call
-# Do not specify location here due to the randomization above.
-# Leaving location as `null` will cause the module to use the resource group location
-# with a data source.
+# This is the module call for Azure Managed Redis
 module "test" {
   source = "../../"
 
-  # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
-  # ...
+  # source             = "Azure/avm-res-cache-redisenterprise/azurerm"
+  # version            = "~> 0.1"
+
   location            = azurerm_resource_group.this.location
-  name                = "TODO" # TODO update with module.naming.<RESOURCE_TYPE>.name_unique
+  name                = module.naming.redis_cache.name_unique
   resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = var.enable_telemetry # see variables.tf
+  resource_group_id   = azurerm_resource_group.this.id
+
+  # Azure Managed Redis databases configuration
+  managed_redis_databases = {
+    default = {
+      sku_name            = "Balanced_B0" # Azure Managed Redis SKU (lowest cost)
+      minimum_tls_version = "1.2"
+      enable_non_ssl_port = false
+    }
+  }
+
+  # Optional: Tags
+  tags = {
+    environment = "demo"
+    managed_by  = "terraform"
+  }
+
+  enable_telemetry = var.enable_telemetry # see variables.tf
 }
