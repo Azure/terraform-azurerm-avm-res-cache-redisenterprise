@@ -20,8 +20,8 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [azapi_resource.cluster](https://registry.terraform.io/providers/azure/azapi/latest/docs/resources/resource) | resource |
-| [azapi_resource.database](https://registry.terraform.io/providers/azure/azapi/latest/docs/resources/resource) | resource |
+| [azapi_resource.cluster](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) | resource |
+| [azapi_resource.database](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) | resource |
 
 ## Inputs
 
