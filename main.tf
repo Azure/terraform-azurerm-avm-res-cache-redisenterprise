@@ -1,29 +1,36 @@
-# TODO: Replace this dummy resource azurerm_resource_group.TODO with your module resource
-resource "azurerm_resource_group" "TODO" {
-  location = var.location
-  name     = var.name # calling code must supply the name
-  tags     = var.tags
-}
+# Note: This module deploys Azure Managed Redis instances (standalone cache service).
+# The actual Redis resources are created in the modules/managed_redis submodule.
 
-# required AVM resources interfaces
+# Management lock on managed redis instances
 resource "azurerm_management_lock" "this" {
-  count = var.lock != null ? 1 : 0
+  for_each = var.lock != null ? var.managed_redis_databases : {}
 
   lock_level = var.lock.kind
-  name       = coalesce(var.lock.name, "lock-${var.lock.kind}")
-  scope      = azurerm_resource_group.TODO.id # TODO: Replace with your azurerm resource name
+  name       = coalesce(var.lock.name, "lock-${var.lock.kind}-${each.key}")
+  scope      = module.managed_redis[each.key].resource_id
   notes      = var.lock.kind == "CanNotDelete" ? "Cannot delete the resource or its child resources." : "Cannot delete or modify the resource or its child resources."
 }
 
+# Role assignments on managed redis instances
 resource "azurerm_role_assignment" "this" {
-  for_each = var.role_assignments
+  for_each = {
+    for pair in flatten([
+      for redis_key in keys(var.managed_redis_databases) : [
+        for role_key, role_value in var.role_assignments : {
+          key       = "${redis_key}-${role_key}"
+          redis_key = redis_key
+          role      = role_value
+        }
+      ]
+    ]) : pair.key => pair
+  }
 
-  principal_id                           = each.value.principal_id
-  scope                                  = azurerm_resource_group.TODO.id # TODO: Replace this dummy resource azurerm_resource_group.TODO with your module resource
-  condition                              = each.value.condition
-  condition_version                      = each.value.condition_version
-  delegated_managed_identity_resource_id = each.value.delegated_managed_identity_resource_id
-  role_definition_id                     = strcontains(lower(each.value.role_definition_id_or_name), lower(local.role_definition_resource_substring)) ? each.value.role_definition_id_or_name : null
-  role_definition_name                   = strcontains(lower(each.value.role_definition_id_or_name), lower(local.role_definition_resource_substring)) ? null : each.value.role_definition_id_or_name
-  skip_service_principal_aad_check       = each.value.skip_service_principal_aad_check
+  principal_id                           = each.value.role.principal_id
+  scope                                  = module.managed_redis[each.value.redis_key].resource_id
+  condition                              = each.value.role.condition
+  condition_version                      = each.value.role.condition_version
+  delegated_managed_identity_resource_id = each.value.role.delegated_managed_identity_resource_id
+  role_definition_id                     = strcontains(lower(each.value.role.role_definition_id_or_name), lower(local.role_definition_resource_substring)) ? each.value.role.role_definition_id_or_name : null
+  role_definition_name                   = strcontains(lower(each.value.role.role_definition_id_or_name), lower(local.role_definition_resource_substring)) ? null : each.value.role.role_definition_id_or_name
+  skip_service_principal_aad_check       = each.value.role.skip_service_principal_aad_check
 }
