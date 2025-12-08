@@ -18,8 +18,8 @@
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_naming"></a> [naming](#module\_naming) | Azure/naming/azurerm | ~> 0.3 |
-| <a name="module_regions"></a> [regions](#module\_regions) | Azure/avm-utl-regions/azurerm | ~> 0.1 |
+| <a name="module_naming"></a> [naming](#module\_naming) | Azure/naming/azurerm | 0.3.0 |
+| <a name="module_regions"></a> [regions](#module\_regions) | Azure/avm-utl-regions/azurerm | 0.1.0 |
 | <a name="module_test"></a> [test](#module\_test) | ../../ | n/a |
 
 ## Resources
