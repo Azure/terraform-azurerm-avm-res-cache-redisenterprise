@@ -4,7 +4,7 @@
 locals {
   # Azure Redis Enterprise API version
   redis_enterprise_api_version = "2024-10-01"
-  
+
 }
 
 # Redis Enterprise Cluster
@@ -23,8 +23,8 @@ resource "azapi_resource" "cluster" {
     }
   }
 
-  tags                   = var.tags
-  response_export_values = ["*"]
+  tags                      = var.tags
+  response_export_values    = ["*"]
   schema_validation_enabled = false
 
   dynamic "timeouts" {
@@ -53,7 +53,7 @@ resource "azapi_resource" "database" {
     }
   }
 
-  response_export_values = ["*"]
+  response_export_values    = ["*"]
   schema_validation_enabled = false
 
   depends_on = [azapi_resource.cluster]

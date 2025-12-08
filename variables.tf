@@ -9,7 +9,7 @@ variable "name" {
   description = "The name of the Redis Enterprise cache."
 
   validation {
-    # TODO clarify the name requirements as the REST API specs & portal says different things - API spec says ^[A-Za-z0-9]{1,60}$ 
+    # TODO clarify the name requirements as the REST API specs & portal says different things - API spec says ^[A-Za-z0-9]{1,60}$
     condition     = can(regex("^[A-Za-z0-9-]{1,63}$", var.name)) && !can(regex("--", var.name)) && !can(regex("-$", var.name))
     error_message = "The name must be between 1 and 63 characters and contain only alphanumeric characters and hyphens, no double hyphens (--), and cannot end with a hyphen."
   }
@@ -46,52 +46,7 @@ A map describing customer-managed keys to associate with the resource. This incl
 - `key_version` - (Optional) The version of the key. If not specified, the latest version is used.
 - `user_assigned_identity` - (Optional) An object representing a user-assigned identity with the following properties:
   - `resource_id` - The resource ID of the user-assigned identity.
-DESCRIPTION  
-}
-
-variable "diagnostic_settings" {
-  type = map(object({
-    name                                     = optional(string, null)
-    log_categories                           = optional(set(string), [])
-    log_groups                               = optional(set(string), ["allLogs"])
-    metric_categories                        = optional(set(string), ["AllMetrics"])
-    log_analytics_destination_type           = optional(string, "Dedicated")
-    workspace_resource_id                    = optional(string, null)
-    storage_account_resource_id              = optional(string, null)
-    event_hub_authorization_rule_resource_id = optional(string, null)
-    event_hub_name                           = optional(string, null)
-    marketplace_partner_resource_id          = optional(string, null)
-  }))
-  default     = {}
-  description = <<DESCRIPTION
-A map of diagnostic settings to create on the Key Vault. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
-
-- `name` - (Optional) The name of the diagnostic setting. One will be generated if not set, however this will not be unique if you want to create multiple diagnostic setting resources.
-- `log_categories` - (Optional) A set of log categories to send to the log analytics workspace. Defaults to `[]`.
-- `log_groups` - (Optional) A set of log groups to send to the log analytics workspace. Defaults to `["allLogs"]`.
-- `metric_categories` - (Optional) A set of metric categories to send to the log analytics workspace. Defaults to `["AllMetrics"]`.
-- `log_analytics_destination_type` - (Optional) The destination type for the diagnostic setting. Possible values are `Dedicated` and `AzureDiagnostics`. Defaults to `Dedicated`.
-- `workspace_resource_id` - (Optional) The resource ID of the log analytics workspace to send logs and metrics to.
-- `storage_account_resource_id` - (Optional) The resource ID of the storage account to send logs and metrics to.
-- `event_hub_authorization_rule_resource_id` - (Optional) The resource ID of the event hub authorization rule to send logs and metrics to.
-- `event_hub_name` - (Optional) The name of the event hub. If none is specified, the default event hub will be selected.
-- `marketplace_partner_resource_id` - (Optional) The full ARM resource ID of the Marketplace resource to which you would like to send Diagnostic LogsLogs.
-DESCRIPTION  
-  nullable    = false
-
-  validation {
-    condition     = alltrue([for _, v in var.diagnostic_settings : contains(["Dedicated", "AzureDiagnostics"], v.log_analytics_destination_type)])
-    error_message = "Log analytics destination type must be one of: 'Dedicated', 'AzureDiagnostics'."
-  }
-  validation {
-    condition = alltrue(
-      [
-        for _, v in var.diagnostic_settings :
-        v.workspace_resource_id != null || v.storage_account_resource_id != null || v.event_hub_authorization_rule_resource_id != null || v.marketplace_partner_resource_id != null
-      ]
-    )
-    error_message = "At least one of `workspace_resource_id`, `storage_account_resource_id`, `marketplace_partner_resource_id`, or `event_hub_authorization_rule_resource_id`, must be set."
-  }
+DESCRIPTION
 }
 
 variable "enable_telemetry" {
@@ -159,7 +114,6 @@ variable "private_endpoints" {
     }), null)
     tags                                    = optional(map(string), null)
     subnet_resource_id                      = string
-    redis_cache_id                          = optional(string, null)
     private_dns_zone_group_name             = optional(string, "default")
     private_dns_zone_resource_ids           = optional(set(string), [])
     application_security_group_associations = optional(map(string), {})
@@ -243,18 +197,4 @@ variable "tags" {
   description = "(Optional) Tags of the resource."
 }
 
-variable "timeouts" {
-  type = object({
-    create = optional(string)
-    delete = optional(string)
-    read   = optional(string)
-    update = optional(string)
-  })
-  default     = null
-  description = <<DESCRIPTION
- - `create` - (Defaults to 30 minutes) Used when creating the Redis Enterprise cache.
- - `delete` - (Defaults to 30 minutes) Used when deleting the Redis Enterprise cache.
- - `read` - (Defaults to 5 minutes) Used when retrieving the Redis Enterprise cache.
- - `update` - (Defaults to 30 minutes) Used when updating the Redis Enterprise cache.
-DESCRIPTION
-}
+

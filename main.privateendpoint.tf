@@ -11,7 +11,7 @@ resource "azurerm_private_endpoint" "this_managed_dns_zone_groups" {
   private_service_connection {
     is_manual_connection           = false
     name                           = each.value.private_service_connection_name != null ? each.value.private_service_connection_name : "pse-${var.name}"
-    private_connection_resource_id = each.value.redis_cache_id != null ? each.value.redis_cache_id : (length(module.managed_redis) > 0 ? values(module.managed_redis)[0].resource_id : null)
+    private_connection_resource_id = length(module.managed_redis) > 0 ? values(module.managed_redis)[0].resource_id : null
     subresource_names              = ["redisCache"]
   }
   dynamic "ip_configuration" {
@@ -50,7 +50,7 @@ resource "azurerm_private_endpoint" "this_unmanaged_dns_zone_groups" {
   private_service_connection {
     is_manual_connection           = false
     name                           = each.value.private_service_connection_name != null ? each.value.private_service_connection_name : "pse-${var.name}"
-    private_connection_resource_id = each.value.redis_cache_id != null ? each.value.redis_cache_id : (length(module.managed_redis) > 0 ? values(module.managed_redis)[0].resource_id : null)
+    private_connection_resource_id = length(module.managed_redis) > 0 ? values(module.managed_redis)[0].resource_id : null
     subresource_names              = ["redisCache"]
   }
   dynamic "ip_configuration" {
