@@ -15,15 +15,15 @@ variable "name" {
   }
 }
 
+variable "resource_group_id" {
+  type        = string
+  description = "The resource ID of the resource group."
+}
+
 # This is required for most resource modules
 variable "resource_group_name" {
   type        = string
   description = "The resource group where the resources will be deployed."
-}
-
-variable "resource_group_id" {
-  type        = string
-  description = "The resource ID of the resource group."
 }
 
 # required AVM interfaces
@@ -196,5 +196,3 @@ variable "tags" {
   default     = null
   description = "(Optional) Tags of the resource."
 }
-
-

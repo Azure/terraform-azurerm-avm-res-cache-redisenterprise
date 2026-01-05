@@ -1,6 +1,6 @@
-output "resource_id" {
-  description = "The resource ID of the Redis Enterprise cluster."
-  value       = azapi_resource.cluster.id
+output "database" {
+  description = "The full Redis Enterprise database resource."
+  value       = azapi_resource.database
 }
 
 output "database_id" {
@@ -18,7 +18,7 @@ output "resource" {
   value       = azapi_resource.cluster
 }
 
-output "database" {
-  description = "The full Redis Enterprise database resource."
-  value       = azapi_resource.database
+output "resource_id" {
+  description = "The resource ID of the Redis Enterprise cluster."
+  value       = azapi_resource.cluster.id
 }

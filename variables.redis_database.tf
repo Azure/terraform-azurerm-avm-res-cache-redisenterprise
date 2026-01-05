@@ -11,6 +11,7 @@ variable "managed_redis_databases" {
       update = optional(string)
     }))
   }))
+  default     = {}
   description = <<DESCRIPTION
 Map of Azure Managed Redis cache instances.
 
@@ -39,8 +40,5 @@ managed_redis_databases = {
 }
 ```
 DESCRIPTION
-
-  default  = {}
-  nullable = false
+  nullable    = false
 }
-

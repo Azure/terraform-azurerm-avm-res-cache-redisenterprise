@@ -1,3 +1,9 @@
+variable "location" {
+  type        = string
+  description = "The Azure region where the Redis cache will be deployed."
+  nullable    = false
+}
+
 variable "name" {
   type        = string
   description = "The name of the Azure Managed Redis cache."
@@ -6,12 +12,6 @@ variable "name" {
     condition     = can(regex("^[A-Za-z0-9-]{1,63}$", var.name))
     error_message = "The name must be between 1 and 63 characters and contain only alphanumeric characters and hyphens."
   }
-}
-
-variable "location" {
-  type        = string
-  description = "The Azure region where the Redis cache will be deployed."
-  nullable    = false
 }
 
 variable "resource_group_id" {
@@ -56,4 +56,3 @@ variable "timeouts" {
   default     = null
   description = "The timeouts for creating, reading, updating, and deleting the database resource."
 }
-

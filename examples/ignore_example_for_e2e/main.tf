@@ -49,14 +49,11 @@ resource "azurerm_resource_group" "this" {
 module "test" {
   source = "../../"
 
-  # source             = "Azure/avm-res-cache-redisenterprise/azurerm"
-  # version            = "~> 0.1"
-
   location            = azurerm_resource_group.this.location
   name                = module.naming.redis_cache.name_unique
-  resource_group_name = azurerm_resource_group.this.name
   resource_group_id   = azurerm_resource_group.this.id
-
+  resource_group_name = azurerm_resource_group.this.name
+  enable_telemetry    = var.enable_telemetry # see variables.tf
   # Azure Managed Redis databases configuration
   managed_redis_databases = {
     premium = {
@@ -65,12 +62,9 @@ module "test" {
       enable_non_ssl_port = false
     }
   }
-
   # Optional: Tags
   tags = {
     environment = "testing"
     managed_by  = "terraform"
   }
-
-  enable_telemetry = var.enable_telemetry # see variables.tf
 }
