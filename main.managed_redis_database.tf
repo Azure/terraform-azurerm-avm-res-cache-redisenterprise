@@ -22,9 +22,13 @@ resource "azapi_resource" "managed_redis_cluster" {
       minimumTlsVersion = try(each.value.minimum_tls_version, "1.2")
     }
   }
+  create_headers            = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  delete_headers            = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  read_headers              = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   response_export_values    = ["properties.hostName"]
   schema_validation_enabled = false
   tags                      = try(each.value.tags, var.tags)
+  update_headers            = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 
   dynamic "timeouts" {
     for_each = try(each.value.timeouts, null) == null ? [] : [each.value.timeouts]
@@ -53,8 +57,12 @@ resource "azapi_resource" "managed_redis_database" {
       modules          = try(each.value.redis_modules, [])
     }
   }
+  create_headers            = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  delete_headers            = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  read_headers              = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   response_export_values    = ["id"]
   schema_validation_enabled = false
+  update_headers            = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 
   dynamic "timeouts" {
     for_each = try(each.value.timeouts, null) == null ? [] : [each.value.timeouts]
