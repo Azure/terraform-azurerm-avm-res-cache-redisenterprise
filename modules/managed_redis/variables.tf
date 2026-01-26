@@ -46,6 +46,39 @@ variable "tags" {
   description = "Tags to assign to the Redis cache."
 }
 
+variable "clustering_policy" {
+  type        = string
+  default     = "EnterpriseCluster"
+  description = "The clustering policy for the database. Valid values: EnterpriseCluster (single endpoint), OSSCluster (Redis Cluster API for best performance), or NoEviction (non-clustered for ≤25GB)."
+  nullable    = false
+
+  validation {
+    condition     = contains(["EnterpriseCluster", "OSSCluster", "NoEviction"], var.clustering_policy)
+    error_message = "clustering_policy must be EnterpriseCluster, OSSCluster, or NoEviction."
+  }
+}
+
+variable "eviction_policy" {
+  type        = string
+  default     = "AllKeysLRU"
+  description = "The eviction policy for the database. Valid values: AllKeysLRU, AllKeysRandom, VolatileLRU, VolatileRandom, VolatileTTL, NoEviction."
+  nullable    = false
+
+  validation {
+    condition     = contains(["AllKeysLRU", "AllKeysRandom", "VolatileLRU", "VolatileRandom", "VolatileTTL", "NoEviction"], var.eviction_policy)
+    error_message = "eviction_policy must be one of: AllKeysLRU, AllKeysRandom, VolatileLRU, VolatileRandom, VolatileTTL, NoEviction."
+  }
+}
+
+variable "redis_modules" {
+  type = list(object({
+    name = string
+    args = optional(string)
+  }))
+  default     = []
+  description = "List of Redis modules to enable. Supported modules: RediSearch, RedisJSON, RedisBloom, RedisTimeSeries. Note: RediSearch requires EnterpriseCluster policy."
+}
+
 variable "timeouts" {
   type = object({
     create = optional(string)

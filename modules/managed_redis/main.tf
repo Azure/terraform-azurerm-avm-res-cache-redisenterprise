@@ -20,7 +20,7 @@ resource "azapi_resource" "cluster" {
       minimumTlsVersion = var.minimum_tls_version
     }
   }
-  response_export_values    = ["*"]
+  response_export_values    = ["properties.hostName"]
   schema_validation_enabled = false
   tags                      = var.tags
 
@@ -44,12 +44,12 @@ resource "azapi_resource" "database" {
   body = {
     properties = {
       clientProtocol   = var.enable_non_ssl_port ? "Plaintext" : "Encrypted"
-      evictionPolicy   = "AllKeysLRU"
-      clusteringPolicy = "EnterpriseCluster"
-      modules          = []
+      evictionPolicy   = var.eviction_policy
+      clusteringPolicy = var.clustering_policy
+      modules          = var.redis_modules
     }
   }
-  response_export_values    = ["*"]
+  response_export_values    = ["id"]
   schema_validation_enabled = false
 
   dynamic "timeouts" {

@@ -3,7 +3,13 @@ variable "managed_redis_databases" {
     sku_name            = string
     enable_non_ssl_port = optional(bool, false)
     minimum_tls_version = optional(string, "1.2")
-    tags                = optional(map(string))
+    clustering_policy   = optional(string, "EnterpriseCluster")
+    eviction_policy     = optional(string, "AllKeysLRU")
+    redis_modules = optional(list(object({
+      name = string
+      args = optional(string)
+    })), [])
+    tags = optional(map(string))
     timeouts = optional(object({
       create = optional(string)
       delete = optional(string)
@@ -26,6 +32,9 @@ Each database object supports the following attributes:
 **Optional:**
 - `enable_non_ssl_port` - Enable non-SSL port (6379). Default: false
 - `minimum_tls_version` - Minimum TLS version. Default: "1.2"
+- `clustering_policy` - Clustering policy: EnterpriseCluster (single endpoint, default), OSSCluster (Redis Cluster API, best performance), or NoEviction (non-clustered, ≤25GB). Default: "EnterpriseCluster"
+- `eviction_policy` - Eviction policy: AllKeysLRU (default), AllKeysRandom, VolatileLRU, VolatileRandom, VolatileTTL, NoEviction
+- `redis_modules` - List of Redis modules to enable (RediSearch, RedisJSON, RedisBloom, RedisTimeSeries). Note: RediSearch requires EnterpriseCluster policy
 - `tags` - Tags to assign to the Redis cache instance
 - `timeouts` - Resource operation timeouts
 
@@ -36,6 +45,16 @@ managed_redis_databases = {
     sku_name            = "Balanced_B0"
     minimum_tls_version = "1.2"
     enable_non_ssl_port = false
+    clustering_policy   = "OSSCluster"  # For best performance
+    eviction_policy     = "AllKeysLRU"
+    redis_modules = [
+      {
+        name = "RedisJSON"
+      },
+      {
+        name = "RediSearch"
+      }
+    ]
   }
 }
 ```
