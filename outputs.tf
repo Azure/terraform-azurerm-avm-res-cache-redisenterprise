@@ -1,12 +1,21 @@
 output "managed_redis_caches" {
   description = "A map of all Azure Managed Redis cache instances created by this module."
-  value       = module.managed_redis
+  value = {
+    for k, v in azapi_resource.managed_redis_cluster : k => {
+      cluster     = v
+      database    = azapi_resource.managed_redis_database[k]
+      database_id = azapi_resource.managed_redis_database[k].id
+      hostname    = v.output.properties.hostName
+      resource    = v
+      resource_id = v.id
+    }
+  }
 }
 
 output "managed_redis_resource_ids" {
   description = "A map of Azure Managed Redis cache resource IDs."
   value = {
-    for k, v in module.managed_redis : k => v.resource_id
+    for k, v in azapi_resource.managed_redis_cluster : k => v.id
   }
 }
 
@@ -19,5 +28,5 @@ output "private_endpoints" {
 
 output "resource_id" {
   description = "The resource ID of the primary Redis cache instance."
-  value       = length(module.managed_redis) > 0 ? values(module.managed_redis)[0].resource_id : null
+  value       = length(azapi_resource.managed_redis_cluster) > 0 ? values(azapi_resource.managed_redis_cluster)[0].id : null
 }

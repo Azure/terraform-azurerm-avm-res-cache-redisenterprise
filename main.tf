@@ -1,5 +1,4 @@
 # Note: This module deploys Azure Managed Redis instances (standalone cache service).
-# The actual Redis resources are created in the modules/managed_redis submodule.
 
 # Management lock on managed redis instances
 resource "azurerm_management_lock" "this" {
@@ -7,7 +6,7 @@ resource "azurerm_management_lock" "this" {
 
   lock_level = var.lock.kind
   name       = coalesce(var.lock.name, "lock-${var.lock.kind}-${each.key}")
-  scope      = module.managed_redis[each.key].resource_id
+  scope      = azapi_resource.managed_redis_cluster[each.key].id
   notes      = var.lock.kind == "CanNotDelete" ? "Cannot delete the resource or its child resources." : "Cannot delete or modify the resource or its child resources."
 }
 
@@ -26,7 +25,7 @@ resource "azurerm_role_assignment" "this" {
   }
 
   principal_id                           = each.value.role.principal_id
-  scope                                  = module.managed_redis[each.value.redis_key].resource_id
+  scope                                  = azapi_resource.managed_redis_cluster[each.value.redis_key].id
   condition                              = each.value.role.condition
   condition_version                      = each.value.role.condition_version
   delegated_managed_identity_resource_id = each.value.role.delegated_managed_identity_resource_id
