@@ -27,14 +27,11 @@ module "redis" {
 
   managed_redis_databases = {
     default = {
-      sku_name = "Standard"
-      family   = "C"
-      capacity = 1
-
-      redis_configuration = {
-        maxmemory_policy       = "volatile-lru"
-        authentication_enabled = true
-      }
+      sku_name            = "Balanced_B0"  # Azure Managed Redis SKU
+      minimum_tls_version = "1.2"
+      enable_non_ssl_port = false
+      clustering_policy   = "EnterpriseCluster"
+      eviction_policy     = "AllKeysLRU"
     }
   }
 }

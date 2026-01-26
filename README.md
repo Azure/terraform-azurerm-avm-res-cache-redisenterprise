@@ -29,14 +29,11 @@ module "redis" {
 
   managed_redis_databases = {
     default = {
-      sku_name = "Standard"
-      family   = "C"
-      capacity = 1
-
-      redis_configuration = {
-        maxmemory_policy       = "volatile-lru"
-        authentication_enabled = true
-      }
+      sku_name            = "Balanced_B0"  # Azure Managed Redis SKU
+      minimum_tls_version = "1.2"
+      enable_non_ssl_port = false
+      clustering_policy   = "EnterpriseCluster"
+      eviction_policy     = "AllKeysLRU"
     }
   }
 }
@@ -61,6 +58,8 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
+- [azapi_resource.managed_redis_cluster](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.managed_redis_database](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azurerm_management_lock.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
 - [azurerm_private_endpoint.this_managed_dns_zone_groups](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint) (resource)
 - [azurerm_private_endpoint.this_unmanaged_dns_zone_groups](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint) (resource)
@@ -347,16 +346,6 @@ Description:   A map of the private endpoints created.
 ### <a name="output_resource_id"></a> [resource\_id](#output\_resource\_id)
 
 Description: The resource ID of the primary Redis cache instance.
-
-## Modules
-
-The following Modules are called:
-
-### <a name="module_managed_redis"></a> [managed\_redis](#module\_managed\_redis)
-
-Source: ./modules/managed_redis
-
-Version:
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection
