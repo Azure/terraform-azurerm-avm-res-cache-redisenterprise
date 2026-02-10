@@ -1,5 +1,5 @@
-# Azure Managed Redis instances
-# Each instance consists of a cluster and its required default database
+# Azure Managed Redis Enterprise
+# Creates a single Redis Enterprise cluster with its default database
 
 locals {
   # Azure Redis Enterprise API version
@@ -7,31 +7,29 @@ locals {
 }
 
 # Redis Enterprise Cluster
-resource "azapi_resource" "managed_redis_cluster" {
-  for_each = var.managed_redis_databases
-
+resource "azapi_resource" "this" {
   location  = var.location
-  name      = "${var.name}-${each.key}"
-  parent_id = var.resource_group_id
+  name      = var.name
+  parent_id = var.parent_id
   type      = "Microsoft.Cache/redisEnterprise@${local.redis_enterprise_api_version}"
   body = {
     sku = {
-      name = each.value.sku_name
+      name = var.sku_name
     }
     properties = {
-      minimumTlsVersion = try(each.value.minimum_tls_version, "1.2")
+      minimumTlsVersion = var.minimum_tls_version
     }
   }
   create_headers            = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   delete_headers            = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   read_headers              = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  response_export_values    = ["properties.hostName"]
+  response_export_values    = ["properties.hostName", "properties.redisVersion"]
   schema_validation_enabled = false
-  tags                      = try(each.value.tags, var.tags)
+  tags                      = var.tags
   update_headers            = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 
   dynamic "timeouts" {
-    for_each = try(each.value.timeouts, null) == null ? [] : [each.value.timeouts]
+    for_each = var.redis_configuration != null ? [var.redis_configuration] : []
 
     content {
       create = timeouts.value.create
@@ -43,29 +41,28 @@ resource "azapi_resource" "managed_redis_cluster" {
 }
 
 # Redis Database within the cluster
-resource "azapi_resource" "managed_redis_database" {
-  for_each = var.managed_redis_databases
-
+# Note: Each Redis Enterprise cluster supports exactly one database named "default"
+resource "azapi_resource" "database" {
   name      = "default"
-  parent_id = azapi_resource.managed_redis_cluster[each.key].id
+  parent_id = azapi_resource.this.id
   type      = "Microsoft.Cache/redisEnterprise/databases@${local.redis_enterprise_api_version}"
   body = {
     properties = {
-      clientProtocol   = try(each.value.enable_non_ssl_port, false) ? "Plaintext" : "Encrypted"
-      evictionPolicy   = try(each.value.eviction_policy, "AllKeysLRU")
-      clusteringPolicy = try(each.value.clustering_policy, "EnterpriseCluster")
-      modules          = try(each.value.redis_modules, [])
+      clientProtocol   = var.enable_non_ssl_port ? "Plaintext" : "Encrypted"
+      evictionPolicy   = var.eviction_policy
+      clusteringPolicy = var.clustering_policy
+      modules          = var.redis_modules
     }
   }
   create_headers            = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   delete_headers            = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   read_headers              = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  response_export_values    = ["id"]
+  response_export_values    = ["properties.provisioningState"]
   schema_validation_enabled = false
   update_headers            = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 
   dynamic "timeouts" {
-    for_each = try(each.value.timeouts, null) == null ? [] : [each.value.timeouts]
+    for_each = var.redis_configuration != null ? [var.redis_configuration] : []
 
     content {
       create = timeouts.value.create
@@ -75,5 +72,5 @@ resource "azapi_resource" "managed_redis_database" {
     }
   }
 
-  depends_on = [azapi_resource.managed_redis_cluster]
+  depends_on = [azapi_resource.this]
 }

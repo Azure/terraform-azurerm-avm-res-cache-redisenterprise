@@ -1,63 +1,119 @@
-variable "managed_redis_databases" {
-  type = map(object({
-    sku_name            = string
-    enable_non_ssl_port = optional(bool, false)
-    minimum_tls_version = optional(string, "1.2")
-    clustering_policy   = optional(string, "EnterpriseCluster")
-    eviction_policy     = optional(string, "AllKeysLRU")
-    redis_modules = optional(list(object({
-      name = string
-      args = optional(string)
-    })), [])
-    tags = optional(map(string))
-    timeouts = optional(object({
-      create = optional(string)
-      delete = optional(string)
-      read   = optional(string)
-      update = optional(string)
-    }))
-  }))
-  default     = {}
+# Note: While each Redis Enterprise cluster only supports one database named "default",
+# this is structured as a map to allow creating multiple independent Redis Enterprise
+# clusters, each with their own database. The map key identifies each cluster+database pair.
+# Redis Enterprise Cluster Configuration
+
+variable "sku_name" {
+  type        = string
   description = <<DESCRIPTION
-Map of Azure Managed Redis cache instances.
-
-Each database object supports the following attributes:
-
-**Required:**
-- `sku_name` - The SKU name of Azure Managed Redis. Examples:
-  - Memory-Optimized: Memory-Optimized_M10, Memory-Optimized_M20
-  - Balanced: Balanced_B0, Balanced_B1, Balanced_B3, Balanced_B5
-  - Compute-Optimized: Compute-Optimized_X5, Compute-Optimized_X10
-
-**Optional:**
-- `enable_non_ssl_port` - Enable non-SSL port (6379). Default: false
-- `minimum_tls_version` - Minimum TLS version. Default: "1.2"
-- `clustering_policy` - Clustering policy: EnterpriseCluster (single endpoint, default), OSSCluster (Redis Cluster API, best performance), or NoEviction (non-clustered, ≤25GB). Default: "EnterpriseCluster"
-- `eviction_policy` - Eviction policy: AllKeysLRU (default), AllKeysRandom, VolatileLRU, VolatileRandom, VolatileTTL, NoEviction
-- `redis_modules` - List of Redis modules to enable (RediSearch, RedisJSON, RedisBloom, RedisTimeSeries). Note: RediSearch requires EnterpriseCluster policy
-- `tags` - Tags to assign to the Redis cache instance
-- `timeouts` - Resource operation timeouts
+The SKU name of Azure Managed Redis (Redis Enterprise). Examples:
+- Memory-Optimized: Memory-Optimized_M10, Memory-Optimized_M20
+- Balanced: Balanced_B0, Balanced_B1, Balanced_B3, Balanced_B5
+- Compute-Optimized: Compute-Optimized_X5, Compute-Optimized_X10
 
 **Example:**
 ```hcl
-managed_redis_databases = {
-  primary = {
-    sku_name            = "Balanced_B0"
-    minimum_tls_version = "1.2"
-    enable_non_ssl_port = false
-    clustering_policy   = "OSSCluster"  # For best performance
-    eviction_policy     = "AllKeysLRU"
-    redis_modules = [
-      {
-        name = "RedisJSON"
-      },
-      {
-        name = "RediSearch"
-      }
-    ]
-  }
-}
+sku_name = "Balanced_B0"
 ```
 DESCRIPTION
   nullable    = false
+}
+
+variable "enable_non_ssl_port" {
+  type        = bool
+  default     = false
+  description = "Enable non-SSL port (6379) for Redis cache. Default: false (SSL only)."
+  nullable    = false
+}
+
+variable "minimum_tls_version" {
+  type        = string
+  default     = "1.2"
+  description = "Minimum TLS version for Redis cache connections. Possible values: 1.0, 1.1, 1.2. Default: 1.2"
+  nullable    = false
+
+  validation {
+    condition     = contains(["1.0", "1.1", "1.2"], var.minimum_tls_version)
+    error_message = "Minimum TLS version must be one of: 1.0, 1.1, 1.2"
+  }
+}
+
+variable "clustering_policy" {
+  type        = string
+  default     = "EnterpriseCluster"
+  description = <<DESCRIPTION
+Clustering policy for the Redis cache:
+- `EnterpriseCluster` - Single endpoint, automatic sharding (default)
+- `OSSCluster` - Redis Cluster API protocol, best performance
+- `NoEviction` - Non-clustered mode, maximum 25GB
+
+Default: "EnterpriseCluster"
+DESCRIPTION
+  nullable    = false
+
+  validation {
+    condition     = contains(["EnterpriseCluster", "OSSCluster", "NoEviction"], var.clustering_policy)
+    error_message = "Clustering policy must be one of: EnterpriseCluster, OSSCluster, NoEviction"
+  }
+}
+
+variable "eviction_policy" {
+  type        = string
+  default     = "AllKeysLRU"
+  description = <<DESCRIPTION
+Eviction policy when maximum memory is reached:
+- `AllKeysLRU` - Remove least recently used keys (default)
+- `AllKeysRandom` - Remove random keys
+- `VolatileLRU` - Remove least recently used keys with expiration set
+- `VolatileRandom` - Remove random keys with expiration set
+- `VolatileTTL` - Remove keys with shortest time to live
+- `NoEviction` - Return errors when memory limit is reached
+
+Default: "AllKeysLRU"
+DESCRIPTION
+  nullable    = false
+
+  validation {
+    condition     = contains(["AllKeysLRU", "AllKeysRandom", "VolatileLRU", "VolatileRandom", "VolatileTTL", "NoEviction"], var.eviction_policy)
+    error_message = "Eviction policy must be one of: AllKeysLRU, AllKeysRandom, VolatileLRU, VolatileRandom, VolatileTTL, NoEviction"
+  }
+}
+
+variable "redis_modules" {
+  type = list(object({
+    name = string
+    args = optional(string)
+  }))
+  default     = []
+  description = <<DESCRIPTION
+List of Redis modules to enable:
+- `RediSearch` - Full-text search (requires EnterpriseCluster policy)
+- `RedisJSON` - JSON data type support
+- `RedisBloom` - Probabilistic data structures
+- `RedisTimeSeries` - Time series data structures
+
+**Example:**
+```hcl
+redis_modules = [
+  {
+    name = "RedisJSON"
+  },
+  {
+    name = "RediSearch"
+  }
+]
+```
+DESCRIPTION
+  nullable    = false
+}
+
+variable "redis_configuration" {
+  type = object({
+    create = optional(string)
+    delete = optional(string)
+    read   = optional(string)
+    update = optional(string)
+  })
+  default     = null
+  description = "Timeouts for Redis Enterprise cluster and database operations."
 }

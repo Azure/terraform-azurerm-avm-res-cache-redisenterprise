@@ -1,22 +1,36 @@
-output "managed_redis_caches" {
-  description = "A map of all Azure Managed Redis cache instances created by this module."
-  value = {
-    for k, v in azapi_resource.managed_redis_cluster : k => {
-      cluster     = v
-      database    = azapi_resource.managed_redis_database[k]
-      database_id = azapi_resource.managed_redis_database[k].id
-      hostname    = v.output.properties.hostName
-      resource    = v
-      resource_id = v.id
-    }
-  }
+output "resource" {
+  description = "The Redis Enterprise cluster resource."
+  value       = azapi_resource.this
 }
 
-output "managed_redis_resource_ids" {
-  description = "A map of Azure Managed Redis cache resource IDs."
-  value = {
-    for k, v in azapi_resource.managed_redis_cluster : k => v.id
-  }
+output "resource_id" {
+  description = "The resource ID of the Redis Enterprise cluster."
+  value       = azapi_resource.this.id
+}
+
+output "database" {
+  description = "The Redis Enterprise database resource."
+  value       = azapi_resource.database
+}
+
+output "database_id" {
+  description = "The resource ID of the Redis Enterprise database."
+  value       = azapi_resource.database.id
+}
+
+output "name" {
+  description = "The name of the Redis Enterprise cluster."
+  value       = azapi_resource.this.name
+}
+
+output "hostname" {
+  description = "The hostname of the Redis Enterprise cluster."
+  value       = jsondecode(azapi_resource.this.output).properties.hostName
+}
+
+output "redis_version" {
+  description = "The Redis version of the cluster."
+  value       = try(jsondecode(azapi_resource.this.output).properties.redisVersion, null)
 }
 
 output "private_endpoints" {
@@ -24,9 +38,4 @@ output "private_endpoints" {
   A map of the private endpoints created.
   DESCRIPTION
   value       = var.private_endpoints_manage_dns_zone_group ? azurerm_private_endpoint.this_managed_dns_zone_groups : azurerm_private_endpoint.this_unmanaged_dns_zone_groups
-}
-
-output "resource_id" {
-  description = "The resource ID of the primary Redis cache instance."
-  value       = length(azapi_resource.managed_redis_cluster) > 0 ? values(azapi_resource.managed_redis_cluster)[0].id : null
 }

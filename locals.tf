@@ -1,4 +1,7 @@
 locals {
+  # Extract resource group name from parent_id for use in resources that require it
+  resource_group_name = split("/", var.parent_id)[4]
+
   # Private endpoint application security group associations.
   # We merge the nested maps from private endpoints and application security group associations into a single map.
   private_endpoint_application_security_group_associations = { for assoc in flatten([
