@@ -10,7 +10,7 @@ output "database_id" {
 
 output "hostname" {
   description = "The hostname of the Redis Enterprise cluster."
-  value       = jsondecode(azapi_resource.this.output).properties.hostName
+  value       = azapi_resource.this.output.properties.hostName
 }
 
 output "name" {
@@ -27,7 +27,7 @@ output "private_endpoints" {
 
 output "redis_version" {
   description = "The Redis version of the cluster."
-  value       = try(jsondecode(azapi_resource.this.output).properties.redisVersion, null)
+  value       = try(azapi_resource.this.output.properties.redisVersion, null)
 }
 
 output "resource" {
