@@ -49,18 +49,16 @@ resource "azurerm_resource_group" "this" {
 module "test" {
   source = "../../"
 
-  location         = azurerm_resource_group.this.location
-  name             = module.naming.redis_cache.name_unique
-  parent_id        = azurerm_resource_group.this.id
-  enable_telemetry = var.enable_telemetry # see variables.tf
-
+  location  = azurerm_resource_group.this.location
+  name      = module.naming.redis_cache.name_unique
+  parent_id = azurerm_resource_group.this.id
   # Redis Enterprise cluster configuration
   sku_name            = "Balanced_B0" # Azure Managed Redis SKU (lowest cost)
-  minimum_tls_version = "1.2"
-  enable_non_ssl_port = false
   clustering_policy   = "EnterpriseCluster"
+  enable_non_ssl_port = false
+  enable_telemetry    = var.enable_telemetry # see variables.tf
   eviction_policy     = "AllKeysLRU"
-
+  minimum_tls_version = "1.2"
   # Optional: Tags
   tags = {
     environment = "demo"

@@ -19,25 +19,6 @@ DESCRIPTION
   nullable    = false
 }
 
-variable "enable_non_ssl_port" {
-  type        = bool
-  default     = false
-  description = "Enable non-SSL port (6379) for Redis cache. Default: false (SSL only)."
-  nullable    = false
-}
-
-variable "minimum_tls_version" {
-  type        = string
-  default     = "1.2"
-  description = "Minimum TLS version for Redis cache connections. Possible values: 1.0, 1.1, 1.2. Default: 1.2"
-  nullable    = false
-
-  validation {
-    condition     = contains(["1.0", "1.1", "1.2"], var.minimum_tls_version)
-    error_message = "Minimum TLS version must be one of: 1.0, 1.1, 1.2"
-  }
-}
-
 variable "clustering_policy" {
   type        = string
   default     = "EnterpriseCluster"
@@ -55,6 +36,13 @@ DESCRIPTION
     condition     = contains(["EnterpriseCluster", "OSSCluster", "NoEviction"], var.clustering_policy)
     error_message = "Clustering policy must be one of: EnterpriseCluster, OSSCluster, NoEviction"
   }
+}
+
+variable "enable_non_ssl_port" {
+  type        = bool
+  default     = false
+  description = "Enable non-SSL port (6379) for Redis cache. Default: false (SSL only)."
+  nullable    = false
 }
 
 variable "eviction_policy" {
@@ -77,6 +65,29 @@ DESCRIPTION
     condition     = contains(["AllKeysLRU", "AllKeysRandom", "VolatileLRU", "VolatileRandom", "VolatileTTL", "NoEviction"], var.eviction_policy)
     error_message = "Eviction policy must be one of: AllKeysLRU, AllKeysRandom, VolatileLRU, VolatileRandom, VolatileTTL, NoEviction"
   }
+}
+
+variable "minimum_tls_version" {
+  type        = string
+  default     = "1.2"
+  description = "Minimum TLS version for Redis cache connections. Possible values: 1.0, 1.1, 1.2. Default: 1.2"
+  nullable    = false
+
+  validation {
+    condition     = contains(["1.0", "1.1", "1.2"], var.minimum_tls_version)
+    error_message = "Minimum TLS version must be one of: 1.0, 1.1, 1.2"
+  }
+}
+
+variable "redis_configuration" {
+  type = object({
+    create = optional(string)
+    delete = optional(string)
+    read   = optional(string)
+    update = optional(string)
+  })
+  default     = null
+  description = "Timeouts for Redis Enterprise cluster and database operations."
 }
 
 variable "redis_modules" {
@@ -105,15 +116,4 @@ redis_modules = [
 ```
 DESCRIPTION
   nullable    = false
-}
-
-variable "redis_configuration" {
-  type = object({
-    create = optional(string)
-    delete = optional(string)
-    read   = optional(string)
-    update = optional(string)
-  })
-  default     = null
-  description = "Timeouts for Redis Enterprise cluster and database operations."
 }

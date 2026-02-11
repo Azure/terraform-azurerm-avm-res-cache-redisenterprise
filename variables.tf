@@ -1,3 +1,5 @@
+# required AVM interfaces
+
 variable "location" {
   type        = string
   description = "Azure region where the resource should be deployed."
@@ -19,9 +21,6 @@ variable "parent_id" {
   type        = string
   description = "The resource ID of the parent resource (resource group)."
 }
-
-# required AVM interfaces
-# Note: customer_managed_key is not included as Redis Enterprise does not currently support customer-managed keys
 
 variable "enable_telemetry" {
   type        = bool
