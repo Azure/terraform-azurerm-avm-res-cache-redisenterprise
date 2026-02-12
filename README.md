@@ -268,14 +268,14 @@ Default: `true`
 ### <a name="input_public_network_access"></a> [public\_network\_access](#input\_public\_network\_access)
 
 Description: Controls public network access for the Redis Enterprise cluster:
-- `Enabled` - Allow public network access (default)
-- `Disabled` - Deny public network access, use private endpoints only
+- `Enabled` - Allow public network access
+- `Disabled` - Deny public network access, use private endpoints only (default)
 
-Default: "Enabled"
+Default: "Disabled"
 
 Type: `string`
 
-Default: `"DISABLED"`
+Default: `"Disabled"`
 
 ### <a name="input_redis_modules"></a> [redis\_modules](#input\_redis\_modules)
 
