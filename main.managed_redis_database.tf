@@ -12,7 +12,8 @@ resource "azapi_resource" "this" {
       name = var.sku_name
     }
     properties = {
-      minimumTlsVersion = var.minimum_tls_version
+      minimumTlsVersion   = var.minimum_tls_version
+      publicNetworkAccess = var.public_network_access
     }
   }
   create_headers            = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null

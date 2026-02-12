@@ -76,6 +76,24 @@ variable "minimum_tls_version" {
   }
 }
 
+variable "public_network_access" {
+  type        = string
+  default     = "DISABLED"
+  description = <<DESCRIPTION
+Controls public network access for the Redis Enterprise cluster:
+- `Enabled` - Allow public network access (default)
+- `Disabled` - Deny public network access, use private endpoints only
+
+Default: "Enabled"
+DESCRIPTION
+  nullable    = false
+
+  validation {
+    condition     = contains(["Enabled", "Disabled"], var.public_network_access)
+    error_message = "Public network access must be either 'Enabled' or 'Disabled'"
+  }
+}
+
 variable "redis_modules" {
   type = list(object({
     name = string
