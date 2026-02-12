@@ -78,13 +78,13 @@ variable "minimum_tls_version" {
 
 variable "public_network_access" {
   type        = string
-  default     = "DISABLED"
+  default     = "Disabled"
   description = <<DESCRIPTION
 Controls public network access for the Redis Enterprise cluster:
-- `Enabled` - Allow public network access (default)
-- `Disabled` - Deny public network access, use private endpoints only
+- `Enabled` - Allow public network access
+- `Disabled` - Deny public network access, use private endpoints only (default)
 
-Default: "Enabled"
+Default: "Disabled"
 DESCRIPTION
   nullable    = false
 
