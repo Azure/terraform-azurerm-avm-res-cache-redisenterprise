@@ -1,17 +1,12 @@
 # Azure Managed Redis Enterprise
 # Creates a single Redis Enterprise cluster with its default database
 
-locals {
-  # Azure Redis Enterprise API version
-  redis_enterprise_api_version = "2024-10-01"
-}
-
 # Redis Enterprise Cluster
 resource "azapi_resource" "this" {
   location  = var.location
   name      = var.name
   parent_id = var.parent_id
-  type      = "Microsoft.Cache/redisEnterprise@${local.redis_enterprise_api_version}"
+  type      = "Microsoft.Cache/redisEnterprise@2025-07-01"
   body = {
     sku = {
       name = var.sku_name
@@ -29,7 +24,7 @@ resource "azapi_resource" "this" {
   update_headers            = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 
   dynamic "timeouts" {
-    for_each = var.redis_configuration != null ? [var.redis_configuration] : []
+    for_each = var.timeouts != null ? [var.timeouts] : []
 
     content {
       create = timeouts.value.create
@@ -45,7 +40,7 @@ resource "azapi_resource" "this" {
 resource "azapi_resource" "database" {
   name      = "default"
   parent_id = azapi_resource.this.id
-  type      = "Microsoft.Cache/redisEnterprise/databases@${local.redis_enterprise_api_version}"
+  type      = "Microsoft.Cache/redisEnterprise/databases@2025-07-01"
   body = {
     properties = {
       clientProtocol   = var.enable_non_ssl_port ? "Plaintext" : "Encrypted"
@@ -62,7 +57,7 @@ resource "azapi_resource" "database" {
   update_headers            = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 
   dynamic "timeouts" {
-    for_each = var.redis_configuration != null ? [var.redis_configuration] : []
+    for_each = var.timeouts != null ? [var.timeouts] : []
 
     content {
       create = timeouts.value.create
@@ -71,6 +66,4 @@ resource "azapi_resource" "database" {
       update = timeouts.value.update
     }
   }
-
-  depends_on = [azapi_resource.this]
 }

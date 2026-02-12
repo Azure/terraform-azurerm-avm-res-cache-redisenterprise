@@ -1,77 +1,102 @@
-resource "azurerm_private_endpoint" "this_managed_dns_zone_groups" {
+resource "azapi_resource" "this_private_endpoint" {
   for_each = var.private_endpoints
 
-  location                      = each.value.location != null ? each.value.location : var.location
-  name                          = each.value.name != null ? each.value.name : "pe-${var.name}"
-  resource_group_name           = each.value.resource_group_name != null ? each.value.resource_group_name : local.resource_group_name
-  subnet_id                     = each.value.subnet_resource_id
-  custom_network_interface_name = each.value.network_interface_name
-  tags                          = each.value.tags
-
-  private_service_connection {
-    is_manual_connection           = false
-    name                           = each.value.private_service_connection_name != null ? each.value.private_service_connection_name : "pse-${var.name}"
-    private_connection_resource_id = azapi_resource.this.id
-    subresource_names              = ["redisCache"]
-  }
-  dynamic "ip_configuration" {
-    for_each = each.value.ip_configurations
-
-    content {
-      name               = ip_configuration.value.name
-      private_ip_address = ip_configuration.value.private_ip_address
-      member_name        = "redisCache"
-      subresource_name   = "redisCache"
+  location = each.value.location != null ? each.value.location : var.location
+  name     = each.value.name != null ? each.value.name : "pe-${var.name}"
+  parent_id = each.value.resource_group_name != null ? (
+    format("%s/resourceGroups/%s",
+      join("/", slice(split("/", var.parent_id), 0, 5)),
+      each.value.resource_group_name
+    )
+  ) : var.parent_id
+  type = "Microsoft.Network/privateEndpoints@2023-11-01"
+  body = {
+    properties = {
+      customNetworkInterfaceName = each.value.network_interface_name
+      ipConfigurations = [
+        for ip_k, ip_v in each.value.ip_configurations : {
+          name = ip_v.name
+          properties = {
+            groupId          = "redisCache"
+            memberName       = "redisCache"
+            privateIPAddress = ip_v.private_ip_address
+          }
+        }
+      ]
+      privateLinkServiceConnections = [
+        {
+          name = each.value.private_service_connection_name != null ? each.value.private_service_connection_name : "pse-${var.name}"
+          properties = {
+            privateLinkServiceId = azapi_resource.this.id
+            groupIds             = ["redisCache"]
+          }
+        }
+      ]
+      subnet = {
+        id = each.value.subnet_resource_id
+      }
     }
   }
-  dynamic "private_dns_zone_group" {
-    for_each = length(each.value.private_dns_zone_resource_ids) > 0 ? ["this"] : []
+  create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  tags           = each.value.tags
+  update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+
+  dynamic "timeouts" {
+    for_each = var.timeouts != null ? [var.timeouts] : []
 
     content {
-      name                 = each.value.private_dns_zone_group_name
-      private_dns_zone_ids = each.value.private_dns_zone_resource_ids
+      create = timeouts.value.create
+      delete = timeouts.value.delete
+      read   = timeouts.value.read
     }
   }
 }
 
-# The PE resource when we are managing **not** the private_dns_zone_group block
-# An example use case is customers using Azure Policy to create private DNS zones
-# e.g. <https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/ready/azure-best-practices/private-link-and-dns-integration-at-scale>
-resource "azurerm_private_endpoint" "this_unmanaged_dns_zone_groups" {
-  for_each = { for k, v in var.private_endpoints : k => v if !var.private_endpoints_manage_dns_zone_group }
-
-  location                      = each.value.location != null ? each.value.location : var.location
-  name                          = each.value.name != null ? each.value.name : "pe-${var.name}"
-  resource_group_name           = each.value.resource_group_name != null ? each.value.resource_group_name : local.resource_group_name
-  subnet_id                     = each.value.subnet_resource_id
-  custom_network_interface_name = each.value.network_interface_name
-  tags                          = each.value.tags
-
-  private_service_connection {
-    is_manual_connection           = false
-    name                           = each.value.private_service_connection_name != null ? each.value.private_service_connection_name : "pse-${var.name}"
-    private_connection_resource_id = azapi_resource.this.id
-    subresource_names              = ["redisCache"]
+# Private DNS Zone Group - only created when managing DNS zones
+resource "azapi_resource" "this_private_endpoint_private_dns_zone_group" {
+  for_each = {
+    for k, v in var.private_endpoints : k => v
+    if var.private_endpoints_manage_dns_zone_group && length(v.private_dns_zone_resource_ids) > 0
   }
-  dynamic "ip_configuration" {
-    for_each = each.value.ip_configurations
 
-    content {
-      name               = ip_configuration.value.name
-      private_ip_address = ip_configuration.value.private_ip_address
-      member_name        = "redisCache"
-      subresource_name   = "redisCache"
+  name      = each.value.private_dns_zone_group_name
+  parent_id = azapi_resource.this_private_endpoint[each.key].id
+  type      = "Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-11-01"
+  body = {
+    properties = {
+      privateDnsZoneConfigs = [
+        for zone_id in each.value.private_dns_zone_resource_ids : {
+          name = replace(split("/", zone_id)[8], ".", "-")
+          properties = {
+            privateDnsZoneId = zone_id
+          }
+        }
+      ]
     }
   }
-
-  lifecycle {
-    ignore_changes = [private_dns_zone_group]
-  }
+  create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
-resource "azurerm_private_endpoint_application_security_group_association" "this" {
+# Application Security Group Associations
+resource "azapi_update_resource" "this_private_endpoint_asg_association" {
   for_each = local.private_endpoint_application_security_group_associations
 
-  application_security_group_id = each.value.asg_resource_id
-  private_endpoint_id           = var.private_endpoints_manage_dns_zone_group ? azurerm_private_endpoint.this_managed_dns_zone_groups[each.value.pe_key].id : azurerm_private_endpoint.this_unmanaged_dns_zone_groups[each.value.pe_key].id
+  resource_id = azapi_resource.this_private_endpoint[each.value.pe_key].id
+  type        = "Microsoft.Network/privateEndpoints@2023-11-01"
+  body = {
+    properties = {
+      applicationSecurityGroups = [
+        {
+          id = each.value.asg_resource_id
+        }
+      ]
+    }
+  }
+  read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }

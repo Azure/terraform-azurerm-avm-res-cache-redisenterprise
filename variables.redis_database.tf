@@ -1,6 +1,3 @@
-# Note: While each Redis Enterprise cluster only supports one database named "default",
-# this is structured as a map to allow creating multiple independent Redis Enterprise
-# clusters, each with their own database. The map key identifies each cluster+database pair.
 # Redis Enterprise Cluster Configuration
 
 variable "sku_name" {
@@ -79,17 +76,6 @@ variable "minimum_tls_version" {
   }
 }
 
-variable "redis_configuration" {
-  type = object({
-    create = optional(string)
-    delete = optional(string)
-    read   = optional(string)
-    update = optional(string)
-  })
-  default     = null
-  description = "Timeouts for Redis Enterprise cluster and database operations."
-}
-
 variable "redis_modules" {
   type = list(object({
     name = string
@@ -116,4 +102,15 @@ redis_modules = [
 ```
 DESCRIPTION
   nullable    = false
+}
+
+variable "timeouts" {
+  type = object({
+    create = optional(string)
+    delete = optional(string)
+    read   = optional(string)
+    update = optional(string)
+  })
+  default     = null
+  description = "Timeouts for Redis Enterprise cluster and database operations."
 }

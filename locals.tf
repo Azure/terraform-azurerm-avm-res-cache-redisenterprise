@@ -10,7 +10,5 @@ locals {
       }
     ]
   ]) : "${assoc.pe_key}-${assoc.asg_key}" => assoc }
-  # Extract resource group name from parent_id for use in resources that require it
-  resource_group_name                = split("/", var.parent_id)[4]
   role_definition_resource_substring = "/providers/Microsoft.Authorization/roleDefinitions"
 }
