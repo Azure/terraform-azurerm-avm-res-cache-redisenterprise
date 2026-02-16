@@ -1,14 +1,14 @@
 # Default example
 
-This example deploys Azure Managed Redis in its simplest form with a Standard SKU.
+This example deploys Azure Managed Redis (Redis Enterprise) in its simplest form.
 
 ## Features
 
-- Standard C1 Redis cache
+- Balanced_B0 SKU (lowest cost tier)
 - TLS 1.2 minimum
-- Authentication enabled
-- volatile-lru eviction policy
-- SSL-only connections
+- EnterpriseCluster clustering policy
+- AllKeysLRU eviction policy
+- SSL-only connections (non-SSL port disabled)
 
 This is suitable for development and testing scenarios.
 
