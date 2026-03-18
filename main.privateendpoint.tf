@@ -12,7 +12,7 @@ resource "azapi_resource" "this_private_endpoint" {
   type = "Microsoft.Network/privateEndpoints@2024-03-01"
   body = {
     properties = {
-      customNetworkInterfaceName = each.value.network_interface_name
+      customNetworkInterfaceName = each.value.network_interface_name != null ? each.value.network_interface_name : ""
       ipConfigurations = [
         for ip_k, ip_v in each.value.ip_configurations : {
           name = ip_v.name
