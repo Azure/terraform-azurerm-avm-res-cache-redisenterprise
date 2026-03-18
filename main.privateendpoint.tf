@@ -17,8 +17,8 @@ resource "azapi_resource" "this_private_endpoint" {
         for ip_k, ip_v in each.value.ip_configurations : {
           name = ip_v.name
           properties = {
-            groupId          = "redisCache"
-            memberName       = "redisCache"
+            groupId          = "redisEnterprise"
+            memberName       = "redisEnterprise"
             privateIPAddress = ip_v.private_ip_address
           }
         }
@@ -28,7 +28,7 @@ resource "azapi_resource" "this_private_endpoint" {
           name = each.value.private_service_connection_name != null ? each.value.private_service_connection_name : "pse-${var.name}"
           properties = {
             privateLinkServiceId = azapi_resource.this.id
-            groupIds             = ["redisCache"]
+            groupIds             = ["redisEnterprise"]
           }
         }
       ]
