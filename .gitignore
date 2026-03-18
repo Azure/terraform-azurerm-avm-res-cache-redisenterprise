@@ -52,3 +52,5 @@ avm.tflint_module.merged.hcl
 examples/*/policy
 *.mptfbackup
 .avm
+stderr.log
+stdout.log

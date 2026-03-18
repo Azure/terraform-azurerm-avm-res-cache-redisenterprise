@@ -9,7 +9,7 @@ resource "azapi_resource" "this_private_endpoint" {
       each.value.resource_group_name
     )
   ) : var.parent_id
-  type = "Microsoft.Network/privateEndpoints@2023-11-01"
+  type = "Microsoft.Network/privateEndpoints@2024-03-01"
   body = {
     properties = {
       customNetworkInterfaceName = each.value.network_interface_name
@@ -63,7 +63,7 @@ resource "azapi_resource" "this_private_endpoint_private_dns_zone_group" {
 
   name      = each.value.private_dns_zone_group_name
   parent_id = azapi_resource.this_private_endpoint[each.key].id
-  type      = "Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-11-01"
+  type      = "Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2024-03-01"
   body = {
     properties = {
       privateDnsZoneConfigs = [
@@ -87,7 +87,7 @@ resource "azapi_update_resource" "this_private_endpoint_asg_association" {
   for_each = local.private_endpoint_application_security_group_associations
 
   resource_id = azapi_resource.this_private_endpoint[each.value.pe_key].id
-  type        = "Microsoft.Network/privateEndpoints@2023-11-01"
+  type        = "Microsoft.Network/privateEndpoints@2024-03-01"
   body = {
     properties = {
       applicationSecurityGroups = [
