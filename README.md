@@ -52,6 +52,7 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
+- [azapi_resource.access_policy_assignment](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.database](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.management_lock](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.role_assignment](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
@@ -104,6 +105,21 @@ Type: `string`
 ## Optional Inputs
 
 The following input variables are optional (have default values):
+
+### <a name="input_access_policy_assignments"></a> [access\_policy\_assignments](#input\_access\_policy\_assignments)
+
+Description: Map of access policy assignments for the Redis Enterprise database. The key is a unique identifier for each assignment.
+
+Type:
+
+```hcl
+map(object({
+    object_id          = string
+    access_policy_name = optional(string, "default")
+  }))
+```
+
+Default: `{}`
 
 ### <a name="input_clustering_policy"></a> [clustering\_policy](#input\_clustering\_policy)
 
