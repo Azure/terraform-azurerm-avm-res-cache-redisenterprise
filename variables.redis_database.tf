@@ -16,6 +16,16 @@ DESCRIPTION
   nullable    = false
 }
 
+variable "access_policy_assignments" {
+  type = map(object({
+    object_id          = string
+    access_policy_name = optional(string, "default")
+  }))
+  default     = {}
+  description = "Map of access policy assignments for the Redis Enterprise database. The key is a unique identifier for each assignment."
+  nullable    = false
+}
+
 variable "clustering_policy" {
   type        = string
   default     = "EnterpriseCluster"

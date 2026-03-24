@@ -54,3 +54,5 @@ examples/*/policy
 .avm
 stderr.log
 stdout.log
+.copilot-prompt.txt
+.run-copilot.ps1

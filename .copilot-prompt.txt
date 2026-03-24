@@ -1,1 +1,0 @@
-﻿read C:\Users\zjhe\.openclaw\workspace-trello-router\COPILOT_INSTRUCTIONS.md then read C:\Users\zjhe\.openclaw\workspace-trello-router\avm_pr.md then follow the instructions and process the following trello event: event=updateCard card_id=69ba5fc108fe2e50754aa78f list_before=Ready for plan review list_after=In action
