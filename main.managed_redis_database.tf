@@ -7,17 +7,6 @@ resource "azapi_resource" "this" {
   name      = var.name
   parent_id = var.parent_id
   type      = "Microsoft.Cache/redisEnterprise@2025-07-01"
-
-  dynamic "identity" {
-    for_each = var.managed_identities.system_assigned || length(var.managed_identities.user_assigned_resource_ids) > 0 ? [1] : []
-
-    content {
-      type = var.managed_identities.system_assigned && length(var.managed_identities.user_assigned_resource_ids) > 0 ? "SystemAssigned, UserAssigned" : var.managed_identities.system_assigned ? "SystemAssigned" : "UserAssigned"
-
-      identity_ids = length(var.managed_identities.user_assigned_resource_ids) > 0 ? tolist(var.managed_identities.user_assigned_resource_ids) : null
-    }
-  }
-
   body = merge(
     {
       sku = {
@@ -56,6 +45,14 @@ resource "azapi_resource" "this" {
   tags                      = var.tags
   update_headers            = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 
+  dynamic "identity" {
+    for_each = var.managed_identities.system_assigned || length(var.managed_identities.user_assigned_resource_ids) > 0 ? [1] : []
+
+    content {
+      type         = var.managed_identities.system_assigned && length(var.managed_identities.user_assigned_resource_ids) > 0 ? "SystemAssigned, UserAssigned" : var.managed_identities.system_assigned ? "SystemAssigned" : "UserAssigned"
+      identity_ids = length(var.managed_identities.user_assigned_resource_ids) > 0 ? tolist(var.managed_identities.user_assigned_resource_ids) : null
+    }
+  }
   dynamic "timeouts" {
     for_each = var.timeouts != null ? [var.timeouts] : []
 
@@ -75,12 +72,29 @@ resource "azapi_resource" "database" {
   parent_id = azapi_resource.this.id
   type      = "Microsoft.Cache/redisEnterprise/databases@2025-07-01"
   body = {
-    properties = {
-      clientProtocol   = var.enable_non_ssl_port ? "Plaintext" : "Encrypted"
-      evictionPolicy   = var.eviction_policy
-      clusteringPolicy = var.clustering_policy
-      modules          = var.redis_modules
-    }
+    properties = merge(
+      {
+        accessKeysAuthentication = var.access_keys_authentication_enabled ? "Enabled" : "Disabled"
+        clientProtocol           = var.enable_non_ssl_port ? "Plaintext" : "Encrypted"
+        evictionPolicy           = var.eviction_policy
+        clusteringPolicy         = var.clustering_policy
+        modules                  = var.redis_modules
+      },
+      var.geo_replication != null ? {
+        geoReplication = {
+          groupNickname   = var.geo_replication.group_nickname
+          linkedDatabases = var.geo_replication.linked_databases
+        }
+      } : {},
+      var.persistence != null ? {
+        persistence = {
+          aofEnabled   = var.persistence.aof_enabled
+          aofFrequency = var.persistence.aof_frequency
+          rdbEnabled   = var.persistence.rdb_enabled
+          rdbFrequency = var.persistence.rdb_frequency
+        }
+      } : {}
+    )
   }
   create_headers            = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   delete_headers            = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null

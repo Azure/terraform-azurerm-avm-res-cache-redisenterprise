@@ -11,11 +11,15 @@ This Terraform module deploys **Azure Managed Redis** (Redis Enterprise) instanc
 - Eviction policies (AllKeysLRU, AllKeysRandom, VolatileLRU, VolatileTTL, NoEviction)
 - Redis modules support (RediSearch, RedisJSON, RedisBloom, RedisTimeSeries)
 - TLS 1.2 support with optional non-SSL port
+- Access key authentication disabled by default with opt-in support
+- Optional AOF or RDB database persistence
+- Optional database geo-replication configuration
 - Public network access controls
 - Managed identity support (SystemAssigned and UserAssigned)
 - Optional customer-managed key (CMK) encryption
 - Optional high availability mode and availability zones
-- Database access policy assignments for Entra ID principals
+- Database access policy assignments for Microsoft Entra principals
+- Diagnostic settings for the Redis Enterprise cluster and database
 - Optional private endpoints for secure connectivity
 - Management locks and RBAC role assignments
 - Configurable timeouts for long-running operations
@@ -79,6 +83,8 @@ The following resources are used by this module:
 
 - [azapi_resource.access_policy_assignment](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.database](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.database_diagnostic_settings](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.diagnostic_settings](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.management_lock](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.role_assignment](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.this](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
@@ -131,14 +137,27 @@ Type: `string`
 
 The following input variables are optional (have default values):
 
+### <a name="input_access_keys_authentication_enabled"></a> [access\_keys\_authentication\_enabled](#input\_access\_keys\_authentication\_enabled)
+
+Description: Whether access key authentication is enabled for the Redis Enterprise database. Defaults to `false` so Microsoft Entra authentication can be used without key-based access.
+
+Type: `bool`
+
+Default: `false`
+
 ### <a name="input_access_policy_assignments"></a> [access\_policy\_assignments](#input\_access\_policy\_assignments)
 
-Description: Map of access policy assignments for the Redis Enterprise database. The key is a unique identifier for each assignment.
+Description: Map of access policy assignments for the Redis Enterprise database. The map key is deliberately arbitrary to avoid issues where map keys may be unknown at plan time.
+
+- `name` - (Optional) The name of the Redis Enterprise database access policy assignment. If omitted, a stable name is generated.
+- `object_id` - (Required) The Microsoft Entra object ID of the principal to assign to the access policy. Pass a managed identity's `principal_id` here when assigning identity-based access.
+- `access_policy_name` - (Optional) The Redis Enterprise database access policy name. Defaults to `default`.
 
 Type:
 
 ```hcl
 map(object({
+    name               = optional(string)
     object_id          = string
     access_policy_name = optional(string, "default")
   }))
@@ -151,7 +170,7 @@ Default: `{}`
 Description: Clustering policy for the Redis cache:
 - `EnterpriseCluster` - Single endpoint, automatic sharding (default)
 - `OSSCluster` - Redis Cluster API protocol, best performance
-- `NoEviction` - Non-clustered mode, maximum 25GB
+- `NoCluster` - Non-clustered mode, maximum 25GB
 
 Default: "EnterpriseCluster"
 
@@ -174,6 +193,74 @@ object({
 ```
 
 Default: `null`
+
+### <a name="input_database_diagnostic_settings"></a> [database\_diagnostic\_settings](#input\_database\_diagnostic\_settings)
+
+Description: A map of diagnostic settings to create on the Redis Enterprise database. The map key is deliberately arbitrary to avoid issues where map keys may be unknown at plan time.
+
+- `name` - (Optional) The name of the diagnostic setting. One will be generated if not set, however this will not be unique if you want to create multiple diagnostic setting resources.
+- `log_categories` - (Optional) A set of log categories to send to the destination. Defaults to `[ "ConnectionEvents" ]`.
+- `log_groups` - (Optional) A set of log category groups to send to the destination. Defaults to `[]`.
+- `metric_categories` - (Optional) A set of metric categories to send to the destination. Defaults to `[]`.
+- `log_analytics_destination_type` - (Optional) The destination type for the diagnostic setting. Possible values are `Dedicated` and `AzureDiagnostics`. Defaults to `Dedicated`.
+- `workspace_resource_id` - (Optional) The resource ID of the Log Analytics workspace to send logs and metrics to.
+- `storage_account_resource_id` - (Optional) The resource ID of the storage account to send logs and metrics to.
+- `event_hub_authorization_rule_resource_id` - (Optional) The resource ID of the event hub authorization rule to send logs and metrics to.
+- `event_hub_name` - (Optional) The name of the event hub. If none is specified, the default event hub will be selected.
+- `marketplace_partner_resource_id` - (Optional) The full ARM resource ID of the Marketplace resource to which diagnostic logs and metrics are sent.
+
+Type:
+
+```hcl
+map(object({
+    name                                     = optional(string, null)
+    log_categories                           = optional(set(string), ["ConnectionEvents"])
+    log_groups                               = optional(set(string), [])
+    metric_categories                        = optional(set(string), [])
+    log_analytics_destination_type           = optional(string, "Dedicated")
+    workspace_resource_id                    = optional(string, null)
+    storage_account_resource_id              = optional(string, null)
+    event_hub_authorization_rule_resource_id = optional(string, null)
+    event_hub_name                           = optional(string, null)
+    marketplace_partner_resource_id          = optional(string, null)
+  }))
+```
+
+Default: `{}`
+
+### <a name="input_diagnostic_settings"></a> [diagnostic\_settings](#input\_diagnostic\_settings)
+
+Description: A map of diagnostic settings to create on the Redis Enterprise cluster. The map key is deliberately arbitrary to avoid issues where map keys may be unknown at plan time.
+
+- `name` - (Optional) The name of the diagnostic setting. One will be generated if not set, however this will not be unique if you want to create multiple diagnostic setting resources.
+- `log_categories` - (Optional) A set of log categories to send to the destination. Defaults to `[]`.
+- `log_groups` - (Optional) A set of log category groups to send to the destination. Defaults to `[]`.
+- `metric_categories` - (Optional) A set of metric categories to send to the destination. Defaults to `[ "AllMetrics" ]`.
+- `log_analytics_destination_type` - (Optional) The destination type for the diagnostic setting. Possible values are `Dedicated` and `AzureDiagnostics`. Defaults to `Dedicated`.
+- `workspace_resource_id` - (Optional) The resource ID of the Log Analytics workspace to send logs and metrics to.
+- `storage_account_resource_id` - (Optional) The resource ID of the storage account to send logs and metrics to.
+- `event_hub_authorization_rule_resource_id` - (Optional) The resource ID of the event hub authorization rule to send logs and metrics to.
+- `event_hub_name` - (Optional) The name of the event hub. If none is specified, the default event hub will be selected.
+- `marketplace_partner_resource_id` - (Optional) The full ARM resource ID of the Marketplace resource to which diagnostic logs and metrics are sent.
+
+Type:
+
+```hcl
+map(object({
+    name                                     = optional(string, null)
+    log_categories                           = optional(set(string), [])
+    log_groups                               = optional(set(string), [])
+    metric_categories                        = optional(set(string), ["AllMetrics"])
+    log_analytics_destination_type           = optional(string, "Dedicated")
+    workspace_resource_id                    = optional(string, null)
+    storage_account_resource_id              = optional(string, null)
+    event_hub_authorization_rule_resource_id = optional(string, null)
+    event_hub_name                           = optional(string, null)
+    marketplace_partner_resource_id          = optional(string, null)
+  }))
+```
+
+Default: `{}`
 
 ### <a name="input_enable_non_ssl_port"></a> [enable\_non\_ssl\_port](#input\_enable\_non\_ssl\_port)
 
@@ -209,6 +296,23 @@ Type: `string`
 
 Default: `"AllKeysLRU"`
 
+### <a name="input_geo_replication"></a> [geo\_replication](#input\_geo\_replication)
+
+Description: Optional geo-replication settings for the Redis Enterprise database.
+
+Type:
+
+```hcl
+object({
+    group_nickname = string
+    linked_databases = optional(set(object({
+      id = string
+    })), [])
+  })
+```
+
+Default: `null`
+
 ### <a name="input_high_availability"></a> [high\_availability](#input\_high\_availability)
 
 Description: Optional high availability mode for the Redis Enterprise cluster.
@@ -237,10 +341,7 @@ Default: `null`
 
 ### <a name="input_managed_identities"></a> [managed\_identities](#input\_managed\_identities)
 
-Description: Controls the Managed Identity configuration on this resource. The following properties can be specified:
-
-- `system_assigned` - (Optional) Specifies if the System Assigned Managed Identity should be enabled.
-- `user_assigned_resource_ids` - (Optional) Specifies a list of User Assigned Managed Identity resource IDs to be assigned to this resource.
+Description: Managed identity configuration for the Redis Enterprise cluster.
 
 Type:
 
@@ -260,6 +361,28 @@ Description: Minimum TLS version for Redis cache connections. Possible values: 1
 Type: `string`
 
 Default: `"1.2"`
+
+### <a name="input_persistence"></a> [persistence](#input\_persistence)
+
+Description: Optional persistence settings for the Redis Enterprise database.
+
+- `aof_enabled` - (Optional) Whether Append Only File (AOF) persistence is enabled. Defaults to `false`.
+- `aof_frequency` - (Optional) The frequency at which AOF data is written to disk. Possible values are `1s` and `always`. Defaults to `1s`.
+- `rdb_enabled` - (Optional) Whether Redis Database (RDB) persistence is enabled. Defaults to `false`.
+- `rdb_frequency` - (Optional) The frequency at which an RDB snapshot is created. Possible values are `1h`, `6h`, and `12h`. Defaults to `12h`.
+
+Type:
+
+```hcl
+object({
+    aof_enabled   = optional(bool, false)
+    aof_frequency = optional(string, "1s")
+    rdb_enabled   = optional(bool, false)
+    rdb_frequency = optional(string, "12h")
+  })
+```
+
+Default: `null`
 
 ### <a name="input_private_endpoints"></a> [private\_endpoints](#input\_private\_endpoints)
 
