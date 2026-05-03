@@ -135,6 +135,24 @@ run "database_auth_persistence_and_principals_can_be_configured" {
   }
 }
 
+run "private_endpoint_can_target_a_different_resource_group" {
+  command = apply
+
+  variables {
+    private_endpoints = {
+      default = {
+        subnet_resource_id  = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-networking/providers/Microsoft.Network/virtualNetworks/vnet-test/subnets/snet-test"
+        resource_group_name = "rg-networking"
+      }
+    }
+  }
+
+  assert {
+    condition     = azapi_resource.this_private_endpoint["default"].parent_id == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-networking"
+    error_message = "Private endpoints should build their parent resource group ID from the subscription root when resource_group_name is specified."
+  }
+}
+
 run "persistence_rejects_multiple_modes" {
   command = plan
 
