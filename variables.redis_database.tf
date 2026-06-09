@@ -16,14 +16,55 @@ DESCRIPTION
   nullable    = false
 }
 
+variable "access_keys_authentication_enabled" {
+  type        = bool
+  default     = false
+  description = "Whether access key authentication is enabled for the Redis Enterprise database. Defaults to `false` so Microsoft Entra authentication can be used without key-based access."
+  nullable    = false
+}
+
 variable "access_policy_assignments" {
   type = map(object({
+    name               = optional(string)
     object_id          = string
     access_policy_name = optional(string, "default")
   }))
   default     = {}
-  description = "Map of access policy assignments for the Redis Enterprise database. The key is a unique identifier for each assignment."
+  description = <<DESCRIPTION
+Map of access policy assignments for the Redis Enterprise database. The map key is deliberately arbitrary to avoid issues where map keys may be unknown at plan time.
+
+- `name` - (Optional) The name of the Redis Enterprise database access policy assignment. If omitted, a stable name is generated.
+- `object_id` - (Required) The Microsoft Entra object ID of the principal to assign to the access policy. Pass a managed identity's `principal_id` here when assigning identity-based access.
+- `access_policy_name` - (Optional) The Redis Enterprise database access policy name. Defaults to `default`.
+DESCRIPTION
   nullable    = false
+
+  validation {
+    condition = alltrue([
+      for _, assignment in var.access_policy_assignments :
+      assignment.name == null ? true : can(regex("^[A-Za-z0-9]{1,60}$", assignment.name))
+    ])
+    error_message = "Each access policy assignment `name`, when specified, must be 1-60 alphanumeric characters."
+  }
+}
+
+variable "clustering_policy" {
+  type        = string
+  default     = "EnterpriseCluster"
+  description = <<DESCRIPTION
+Clustering policy for the Redis cache:
+- `EnterpriseCluster` - Single endpoint, automatic sharding (default)
+- `OSSCluster` - Redis Cluster API protocol, best performance
+- `NoCluster` - Non-clustered mode, maximum 25GB
+
+Default: "EnterpriseCluster"
+DESCRIPTION
+  nullable    = false
+
+  validation {
+    condition     = contains(["EnterpriseCluster", "OSSCluster", "NoCluster"], var.clustering_policy)
+    error_message = "Clustering policy must be one of: EnterpriseCluster, OSSCluster, NoCluster"
+  }
 }
 
 variable "customer_managed_key_encryption" {
@@ -34,48 +75,6 @@ variable "customer_managed_key_encryption" {
   })
   default     = null
   description = "Optional customer-managed key encryption settings for the Redis Enterprise cluster."
-}
-
-variable "high_availability" {
-  type        = string
-  default     = null
-  description = "Optional high availability mode for the Redis Enterprise cluster."
-}
-
-variable "zones" {
-  type        = set(string)
-  default     = []
-  description = "Optional set of availability zones for the Redis Enterprise cluster."
-  nullable    = false
-}
-
-variable "managed_identities" {
-  type = object({
-    system_assigned            = optional(bool, false)
-    user_assigned_resource_ids = optional(set(string), [])
-  })
-  default     = {}
-  description = "Managed identity configuration for the Redis Enterprise cluster."
-  nullable    = false
-}
-
-variable "clustering_policy" {
-  type        = string
-  default     = "EnterpriseCluster"
-  description = <<DESCRIPTION
-Clustering policy for the Redis cache:
-- `EnterpriseCluster` - Single endpoint, automatic sharding (default)
-- `OSSCluster` - Redis Cluster API protocol, best performance
-- `NoEviction` - Non-clustered mode, maximum 25GB
-
-Default: "EnterpriseCluster"
-DESCRIPTION
-  nullable    = false
-
-  validation {
-    condition     = contains(["EnterpriseCluster", "OSSCluster", "NoEviction"], var.clustering_policy)
-    error_message = "Clustering policy must be one of: EnterpriseCluster, OSSCluster, NoEviction"
-  }
 }
 
 variable "enable_non_ssl_port" {
@@ -107,6 +106,33 @@ DESCRIPTION
   }
 }
 
+variable "geo_replication" {
+  type = object({
+    group_nickname = string
+    linked_databases = optional(set(object({
+      id = string
+    })), [])
+  })
+  default     = null
+  description = "Optional geo-replication settings for the Redis Enterprise database."
+}
+
+variable "high_availability" {
+  type        = string
+  default     = null
+  description = "Optional high availability mode for the Redis Enterprise cluster."
+}
+
+variable "managed_identities" {
+  type = object({
+    system_assigned            = optional(bool, false)
+    user_assigned_resource_ids = optional(set(string), [])
+  })
+  default     = {}
+  description = "Managed identity configuration for the Redis Enterprise cluster."
+  nullable    = false
+}
+
 variable "minimum_tls_version" {
   type        = string
   default     = "1.2"
@@ -116,6 +142,37 @@ variable "minimum_tls_version" {
   validation {
     condition     = contains(["1.0", "1.1", "1.2"], var.minimum_tls_version)
     error_message = "Minimum TLS version must be one of: 1.0, 1.1, 1.2"
+  }
+}
+
+variable "persistence" {
+  type = object({
+    aof_enabled   = optional(bool, false)
+    aof_frequency = optional(string, "1s")
+    rdb_enabled   = optional(bool, false)
+    rdb_frequency = optional(string, "12h")
+  })
+  default     = null
+  description = <<DESCRIPTION
+Optional persistence settings for the Redis Enterprise database.
+
+- `aof_enabled` - (Optional) Whether Append Only File (AOF) persistence is enabled. Defaults to `false`.
+- `aof_frequency` - (Optional) The frequency at which AOF data is written to disk. Possible values are `1s` and `always`. Defaults to `1s`.
+- `rdb_enabled` - (Optional) Whether Redis Database (RDB) persistence is enabled. Defaults to `false`.
+- `rdb_frequency` - (Optional) The frequency at which an RDB snapshot is created. Possible values are `1h`, `6h`, and `12h`. Defaults to `12h`.
+DESCRIPTION
+
+  validation {
+    condition     = var.persistence == null ? true : !(var.persistence.aof_enabled && var.persistence.rdb_enabled)
+    error_message = "AOF and RDB persistence are mutually exclusive. Only one may be enabled at a time."
+  }
+  validation {
+    condition     = var.persistence == null ? true : contains(["1s", "always"], var.persistence.aof_frequency)
+    error_message = "AOF frequency must be one of: 1s, always."
+  }
+  validation {
+    condition     = var.persistence == null ? true : contains(["1h", "6h", "12h"], var.persistence.rdb_frequency)
+    error_message = "RDB frequency must be one of: 1h, 6h, 12h."
   }
 }
 
@@ -174,4 +231,11 @@ variable "timeouts" {
   })
   default     = null
   description = "Timeouts for Redis Enterprise cluster and database operations."
+}
+
+variable "zones" {
+  type        = set(string)
+  default     = []
+  description = "Optional set of availability zones for the Redis Enterprise cluster."
+  nullable    = false
 }
