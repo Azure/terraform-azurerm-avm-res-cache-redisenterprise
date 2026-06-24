@@ -66,15 +66,15 @@ variable "clustering_policy" {
 Clustering policy for the Redis cache:
 - `EnterpriseCluster` - Single endpoint, automatic sharding (default)
 - `OSSCluster` - Redis Cluster API protocol, best performance
-- `NoEviction` - Non-clustered mode, maximum 25GB
+- `NoCluster` - Non-clustered mode, maximum 25GB
 
 Default: "EnterpriseCluster"
 DESCRIPTION
   nullable    = false
 
   validation {
-    condition     = contains(["EnterpriseCluster", "OSSCluster", "NoEviction"], var.clustering_policy)
-    error_message = "Clustering policy must be one of: EnterpriseCluster, OSSCluster, NoEviction"
+    condition     = contains(["EnterpriseCluster", "OSSCluster", "NoCluster"], var.clustering_policy)
+    error_message = "Clustering policy must be one of: EnterpriseCluster, OSSCluster, NoCluster"
   }
 }
 
