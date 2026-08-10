@@ -7,17 +7,6 @@ resource "azapi_resource" "this" {
   name      = var.name
   parent_id = var.parent_id
   type      = "Microsoft.Cache/redisEnterprise@2025-07-01"
-
-  dynamic "identity" {
-    for_each = var.managed_identities.system_assigned || length(var.managed_identities.user_assigned_resource_ids) > 0 ? [1] : []
-
-    content {
-      type = var.managed_identities.system_assigned && length(var.managed_identities.user_assigned_resource_ids) > 0 ? "SystemAssigned, UserAssigned" : var.managed_identities.system_assigned ? "SystemAssigned" : "UserAssigned"
-
-      identity_ids = length(var.managed_identities.user_assigned_resource_ids) > 0 ? tolist(var.managed_identities.user_assigned_resource_ids) : null
-    }
-  }
-
   body = merge(
     {
       sku = {
@@ -55,6 +44,16 @@ resource "azapi_resource" "this" {
   schema_validation_enabled = false
   tags                      = var.tags
   update_headers            = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+
+  dynamic "identity" {
+    for_each = var.managed_identities.system_assigned || length(var.managed_identities.user_assigned_resource_ids) > 0 ? [1] : []
+
+    content {
+      type = var.managed_identities.system_assigned && length(var.managed_identities.user_assigned_resource_ids) > 0 ? "SystemAssigned, UserAssigned" : var.managed_identities.system_assigned ? "SystemAssigned" : "UserAssigned"
+
+      identity_ids = length(var.managed_identities.user_assigned_resource_ids) > 0 ? tolist(var.managed_identities.user_assigned_resource_ids) : null
+    }
+  }
 
   dynamic "timeouts" {
     for_each = var.timeouts != null ? [var.timeouts] : []

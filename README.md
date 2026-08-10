@@ -12,10 +12,6 @@ This Terraform module deploys **Azure Managed Redis** (Redis Enterprise) instanc
 - Redis modules support (RediSearch, RedisJSON, RedisBloom, RedisTimeSeries)
 - TLS 1.2 support with optional non-SSL port
 - Public network access controls
-- Managed identity support (SystemAssigned and UserAssigned)
-- Optional customer-managed key (CMK) encryption
-- Optional high availability mode and availability zones
-- Database access policy assignments for Entra ID principals
 - Optional private endpoints for secure connectivity
 - Management locks and RBAC role assignments
 - Configurable timeouts for long-running operations
@@ -36,27 +32,6 @@ module "redis" {
   enable_non_ssl_port = false
   clustering_policy   = "EnterpriseCluster"
   eviction_policy     = "AllKeysLRU"
-
-  managed_identities = {
-    system_assigned            = true
-    user_assigned_resource_ids = [azurerm_user_assigned_identity.example.id]
-  }
-
-  high_availability = "Enabled"
-  zones             = ["1", "2", "3"]
-
-  customer_managed_key_encryption = {
-    key_encryption_key_url             = "https://kv-example.vault.azure.net/keys/redis-cmk/00000000000000000000000000000000"
-    identity_type                      = "UserAssignedIdentity"
-    user_assigned_identity_resource_id = azurerm_user_assigned_identity.example.id
-  }
-
-  access_policy_assignments = {
-    app_identity = {
-      object_id          = "00000000-0000-0000-0000-000000000000"
-      access_policy_name = "default"
-    }
-  }
 }
 ```
 
@@ -237,10 +212,7 @@ Default: `null`
 
 ### <a name="input_managed_identities"></a> [managed\_identities](#input\_managed\_identities)
 
-Description: Controls the Managed Identity configuration on this resource. The following properties can be specified:
-
-- `system_assigned` - (Optional) Specifies if the System Assigned Managed Identity should be enabled.
-- `user_assigned_resource_ids` - (Optional) Specifies a list of User Assigned Managed Identity resource IDs to be assigned to this resource.
+Description: Managed identity configuration for the Redis Enterprise cluster.
 
 Type:
 
