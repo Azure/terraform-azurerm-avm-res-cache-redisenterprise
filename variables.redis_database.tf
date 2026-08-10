@@ -1,5 +1,6 @@
 # Redis Enterprise Cluster Configuration
 
+
 variable "sku_name" {
   type        = string
   description = <<DESCRIPTION
@@ -26,39 +27,6 @@ variable "access_policy_assignments" {
   nullable    = false
 }
 
-variable "customer_managed_key_encryption" {
-  type = object({
-    key_encryption_key_url             = string
-    identity_type                      = string
-    user_assigned_identity_resource_id = optional(string)
-  })
-  default     = null
-  description = "Optional customer-managed key encryption settings for the Redis Enterprise cluster."
-}
-
-variable "high_availability" {
-  type        = string
-  default     = null
-  description = "Optional high availability mode for the Redis Enterprise cluster."
-}
-
-variable "zones" {
-  type        = set(string)
-  default     = []
-  description = "Optional set of availability zones for the Redis Enterprise cluster."
-  nullable    = false
-}
-
-variable "managed_identities" {
-  type = object({
-    system_assigned            = optional(bool, false)
-    user_assigned_resource_ids = optional(set(string), [])
-  })
-  default     = {}
-  description = "Managed identity configuration for the Redis Enterprise cluster."
-  nullable    = false
-}
-
 variable "clustering_policy" {
   type        = string
   default     = "EnterpriseCluster"
@@ -76,6 +44,16 @@ DESCRIPTION
     condition     = contains(["EnterpriseCluster", "OSSCluster", "NoEviction"], var.clustering_policy)
     error_message = "Clustering policy must be one of: EnterpriseCluster, OSSCluster, NoEviction"
   }
+}
+
+variable "customer_managed_key_encryption" {
+  type = object({
+    key_encryption_key_url             = string
+    identity_type                      = string
+    user_assigned_identity_resource_id = optional(string)
+  })
+  default     = null
+  description = "Optional customer-managed key encryption settings for the Redis Enterprise cluster."
 }
 
 variable "enable_non_ssl_port" {
@@ -105,6 +83,22 @@ DESCRIPTION
     condition     = contains(["AllKeysLRU", "AllKeysRandom", "VolatileLRU", "VolatileRandom", "VolatileTTL", "NoEviction"], var.eviction_policy)
     error_message = "Eviction policy must be one of: AllKeysLRU, AllKeysRandom, VolatileLRU, VolatileRandom, VolatileTTL, NoEviction"
   }
+}
+
+variable "high_availability" {
+  type        = string
+  default     = null
+  description = "Optional high availability mode for the Redis Enterprise cluster."
+}
+
+variable "managed_identities" {
+  type = object({
+    system_assigned            = optional(bool, false)
+    user_assigned_resource_ids = optional(set(string), [])
+  })
+  default     = {}
+  description = "Managed identity configuration for the Redis Enterprise cluster."
+  nullable    = false
 }
 
 variable "minimum_tls_version" {
@@ -174,4 +168,11 @@ variable "timeouts" {
   })
   default     = null
   description = "Timeouts for Redis Enterprise cluster and database operations."
+}
+
+variable "zones" {
+  type        = set(string)
+  default     = []
+  description = "Optional set of availability zones for the Redis Enterprise cluster."
+  nullable    = false
 }
