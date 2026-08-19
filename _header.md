@@ -5,7 +5,7 @@ This Terraform module deploys **Azure Managed Redis** (Redis Enterprise) instanc
 ## Features
 
 - Deploy Azure Managed Redis (Redis Enterprise) with various SKUs (Balanced, Memory/Compute/Flash Optimized)
-- Configurable clustering policies (EnterpriseCluster, OSSCluster, NoEviction)
+- Configurable clustering policies (EnterpriseCluster, OSSCluster, NoCluster)
 - Eviction policies (AllKeysLRU, AllKeysRandom, VolatileLRU, VolatileTTL, NoEviction)
 - Redis modules support (RediSearch, RedisJSON, RedisBloom, RedisTimeSeries)
 - TLS 1.2 support with optional non-SSL port
