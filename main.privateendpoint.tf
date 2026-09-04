@@ -37,11 +37,7 @@ resource "azapi_resource" "this_private_endpoint" {
       }
     }
   }
-  create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  tags           = each.value.tags
-  update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  tags = each.value.tags
 
   dynamic "timeouts" {
     for_each = var.timeouts != null ? [var.timeouts] : []
@@ -76,10 +72,6 @@ resource "azapi_resource" "this_private_endpoint_private_dns_zone_group" {
       ]
     }
   }
-  create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
 # Application Security Group Associations
@@ -97,6 +89,4 @@ resource "azapi_update_resource" "this_private_endpoint_asg_association" {
       ]
     }
   }
-  read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
