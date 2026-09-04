@@ -18,7 +18,6 @@ provider "azurerm" {
   resource_provider_registrations = "none"
 }
 
-
 ## Section to provide a random Azure region for the resource group
 # This allows us to randomize the region for the resource group.
 module "regions" {
@@ -31,6 +30,7 @@ resource "random_integer" "region_index" {
   max = length(module.regions.regions) - 1
   min = 0
 }
+
 ## End of section to provide a random Azure region for the resource group
 
 # This ensures we have unique CAF compliant names for our resources.
@@ -55,10 +55,10 @@ resource "azurerm_virtual_network" "this" {
 
 # Subnet for private endpoint
 resource "azurerm_subnet" "this" {
-  address_prefixes     = ["10.0.1.0/24"]
   name                 = module.naming.subnet.name_unique
   resource_group_name  = azurerm_resource_group.this.name
   virtual_network_name = azurerm_virtual_network.this.name
+  address_prefixes     = ["10.0.1.0/24"]
 }
 
 # Private DNS zone for Redis Enterprise
