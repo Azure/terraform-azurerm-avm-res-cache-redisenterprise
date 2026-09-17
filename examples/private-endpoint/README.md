@@ -38,6 +38,8 @@ provider "azurerm" {
 module "regions" {
   source  = "Azure/avm-utl-regions/azurerm"
   version = "0.9.2"
+
+  enable_telemetry = false
 }
 
 # This allows us to randomize the region for the resource group.
@@ -101,7 +103,7 @@ module "test" {
   sku_name            = "Balanced_B0"
   clustering_policy   = "EnterpriseCluster"
   enable_non_ssl_port = false
-  enable_telemetry    = var.enable_telemetry # see variables.tf
+  enable_telemetry    = false # see variables.tf
   eviction_policy     = "AllKeysLRU"
   minimum_tls_version = "1.2"
   # Private endpoint configuration
