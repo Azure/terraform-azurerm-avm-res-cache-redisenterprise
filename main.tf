@@ -13,10 +13,6 @@ resource "azapi_resource" "management_lock" {
       notes = var.lock.kind == "CanNotDelete" ? "Cannot delete the resource or its child resources." : "Cannot delete or modify the resource or its child resources."
     }
   }
-  create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }
 
 # Role assignments on Redis Enterprise cluster
@@ -36,8 +32,4 @@ resource "azapi_resource" "role_assignment" {
       delegatedManagedIdentityResourceId = try(each.value.delegated_managed_identity_resource_id, null)
     }
   }
-  create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
-  update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 }

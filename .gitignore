@@ -51,8 +51,8 @@ avm.tflint_module.merged.hcl
 # conftest policy
 examples/*/policy
 *.mptfbackup
-.avm
 stderr.log
 stdout.log
 .copilot-prompt.txt
 .run-copilot.ps1
+.avm/managed-files.json
