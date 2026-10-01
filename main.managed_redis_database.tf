@@ -70,12 +70,29 @@ resource "azapi_resource" "database" {
   parent_id = azapi_resource.this.id
   type      = "Microsoft.Cache/redisEnterprise/databases@2025-07-01"
   body = {
-    properties = {
-      clientProtocol   = var.enable_non_ssl_port ? "Plaintext" : "Encrypted"
-      evictionPolicy   = var.eviction_policy
-      clusteringPolicy = var.clustering_policy
-      modules          = var.redis_modules
-    }
+    properties = merge(
+      {
+        accessKeysAuthentication = var.access_keys_authentication_enabled ? "Enabled" : "Disabled"
+        clientProtocol           = var.enable_non_ssl_port ? "Plaintext" : "Encrypted"
+        evictionPolicy           = var.eviction_policy
+        clusteringPolicy         = var.clustering_policy
+        modules                  = var.redis_modules
+      },
+      var.geo_replication != null ? {
+        geoReplication = {
+          groupNickname   = var.geo_replication.group_nickname
+          linkedDatabases = var.geo_replication.linked_databases
+        }
+      } : {},
+      var.persistence != null ? {
+        persistence = {
+          aofEnabled   = var.persistence.aof_enabled
+          aofFrequency = var.persistence.aof_frequency
+          rdbEnabled   = var.persistence.rdb_enabled
+          rdbFrequency = var.persistence.rdb_frequency
+        }
+      } : {}
+    )
   }
   schema_validation_enabled = false
 

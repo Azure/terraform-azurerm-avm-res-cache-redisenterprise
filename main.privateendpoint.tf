@@ -5,7 +5,7 @@ resource "azapi_resource" "this_private_endpoint" {
   name     = each.value.name != null ? each.value.name : "pe-${var.name}"
   parent_id = each.value.resource_group_name != null ? (
     format("%s/resourceGroups/%s",
-      join("/", slice(split("/", var.parent_id), 0, 5)),
+      join("/", slice(split("/", var.parent_id), 0, 3)),
       each.value.resource_group_name
     )
   ) : var.parent_id
