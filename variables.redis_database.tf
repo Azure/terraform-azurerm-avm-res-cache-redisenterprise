@@ -1,5 +1,6 @@
 # Redis Enterprise Cluster Configuration
 
+
 variable "sku_name" {
   type        = string
   description = <<DESCRIPTION

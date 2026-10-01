@@ -1,0 +1,10 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Azure/azure-verified-modules-tools/main/src/Avm.Authoring/Resources/Schemas/v1/avm-module-metadata.schema.json",
+  "moduleDisplayName": "Azure Managed Redis",
+  "moduleDescription": "AVM Resource Module for Azure Managed Redis",
+  "canonicalType": "Microsoft.Cache/redisEnterprise",
+  "owners": [
+    "Ankur1106"
+  ],
+  "telemetryIdPrefix": "46d3xtrf.res.657173b"
+}
