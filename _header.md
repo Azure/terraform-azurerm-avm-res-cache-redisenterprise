@@ -16,6 +16,14 @@ This Terraform module deploys **Azure Managed Redis** (Redis Enterprise) instanc
 
 ## Usage
 
+Private endpoints retain their existing Terraform addresses and generated names.
+Endpoint tags inherit the module tags unless an endpoint supplies its own map (including an empty map).
+Endpoint locks and role assignments are now applied; review these settings before upgrading.
+An omitted endpoint lock inherits the cluster lock; use `lock = { kind = "None" }` to opt out.
+`resource_group_name` accepts a resource group ID
+or, for compatibility, a resource group name in the cluster's subscription.
+The default private-link group and IP configuration member remain `redisEnterprise`.
+
 ```hcl
 module "redis" {
   source  = "Azure/avm-res-cache-redisenterprise/azurerm"
@@ -32,4 +40,3 @@ module "redis" {
   eviction_policy     = "AllKeysLRU"
 }
 ```
-
