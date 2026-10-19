@@ -9,9 +9,12 @@ mock_provider "azapi" {
       }
     }
   }
+  mock_data "azapi_client_config" {
+    defaults = {
+      subscription_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000"
+    }
+  }
 }
-
-mock_provider "modtm" {}
 
 mock_provider "random" {
   mock_resource "random_uuid" {
@@ -64,6 +67,10 @@ run "defaults_create_no_endpoint_resources" {
     )
     error_message = "Empty private endpoints must preserve the default resource graph."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+  }
 }
 
 run "endpoint_defaults_preserve_names_group_member_and_tags" {
@@ -92,6 +99,10 @@ run "endpoint_defaults_preserve_names_group_member_and_tags" {
       azapi_resource.this_private_endpoint["primary"].body.properties.ipConfigurations[0].properties.privateIPAddress == "10.0.1.5"
     )
     error_message = "Existing endpoint defaults must remain stable and inherit module tags."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
   }
 }
 
@@ -179,6 +190,10 @@ run "explicit_endpoint_fields_dns_lock_and_named_role_are_applied" {
     )
     error_message = "The complete endpoint role assignment must be applied, including role-name resolution."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+  }
 }
 
 run "alternate_group_name_and_multiple_security_groups" {
@@ -215,6 +230,10 @@ run "alternate_group_name_and_multiple_security_groups" {
     )
     error_message = "Resource-group names, GUID roles and all ASGs must work without replacing existing association addresses."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+  }
 }
 
 run "group_id_empty_tags_and_inherited_lock_with_external_dns" {
@@ -244,6 +263,10 @@ run "group_id_empty_tags_and_inherited_lock_with_external_dns" {
     )
     error_message = "Explicit empty tags, resource-group IDs, inherited locks and externally managed DNS must be respected."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+  }
 }
 
 run "empty_dns_zones_do_not_create_zone_group" {
@@ -260,6 +283,10 @@ run "empty_dns_zones_do_not_create_zone_group" {
   assert {
     condition     = length(azapi_resource.this_private_endpoint_private_dns_zone_group) == 0 && length(azapi_resource.private_endpoint_locks) == 0
     error_message = "No DNS zones or locks must be created when they are not configured."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
   }
 }
 
@@ -296,6 +323,10 @@ run "endpoint_lock_override_opt_out_and_full_role_id" {
     )
     error_message = "Endpoint lock overrides and opt-out must work, and fully qualified role IDs must remain unchanged."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+  }
 }
 
 run "reject_invalid_subnet" {
@@ -304,6 +335,10 @@ run "reject_invalid_subnet" {
     private_endpoints = { primary = { subnet_resource_id = "not-a-subnet" } }
   }
   expect_failures = [var.private_endpoints]
+  providers = {
+    azapi  = azapi
+    random = random
+  }
 }
 
 run "reject_invalid_dns_zone" {
@@ -317,6 +352,10 @@ run "reject_invalid_dns_zone" {
     }
   }
   expect_failures = [var.private_endpoints]
+  providers = {
+    azapi  = azapi
+    random = random
+  }
 }
 
 run "reject_invalid_application_security_group" {
@@ -330,6 +369,10 @@ run "reject_invalid_application_security_group" {
     }
   }
   expect_failures = [var.private_endpoints]
+  providers = {
+    azapi  = azapi
+    random = random
+  }
 }
 
 run "reject_invalid_delegated_identity" {
@@ -349,4 +392,8 @@ run "reject_invalid_delegated_identity" {
     }
   }
   expect_failures = [var.private_endpoints]
+  providers = {
+    azapi  = azapi
+    random = random
+  }
 }
