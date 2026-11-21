@@ -1,4 +1,4 @@
-# Private Endpoint example
+# WAF-aligned example
 
 This example deploys Azure Managed Redis (Redis Enterprise) with a private endpoint connection.
 

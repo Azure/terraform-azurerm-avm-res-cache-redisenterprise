@@ -1,4 +1,4 @@
-# Default example
+# Defaults example
 
 This example deploys Azure Managed Redis (Redis Enterprise) in its simplest form.
 
